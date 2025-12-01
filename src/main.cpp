@@ -214,8 +214,19 @@ void autonomous() {}
  * task, not resume it from where it left off.
  */
 void opcontrol() {
+  // example initialization of odometery system
+  odom::TaskParams params;
+  params.sV_in = 7.0;
+  params.imu_port = 5;
+  params.vert_port = 1;
+  params.YwheelDiameter = 4.0;
+  
+  odom::init_odom(odom::DRIVE, params);
 
-  odom::init_odom(odom::DRIVE, 7, 5, 1, 4);
+  while (true) {
+  pros::lcd::print(0, "X: %f Y: %f", odom::getPos()[0], odom::getPos()[1]);
+  pros::delay(10);
+  }
 	
 	
   //control::control(10,20,0);
