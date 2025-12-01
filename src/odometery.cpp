@@ -183,30 +183,22 @@ bool init_odom(enum odom::config con, TaskParams params){
   }else if (con == odom::XTRACK){
     //setup for xtrack only
     pros::Task odo(odomX, &params);
-  }else if (con == odom::YTRACK){
-    //setup for ytrack only
-    pros::Task odo(odomY, &params);
-  }else if (con == odom::XYTRACK){
-    //setup for xytrack
-    pros::Task odo(odomXY, &params);
+  }else{
+    return false
   }
   return true;
 
 }
 
 bool init_odom(enum odom::config con, odomParams params){
-  if (con == odom::DRIVE){
-    //setup for drive only
-    pros::Task odo(odomDrive, &params);
-  }else if (con == odom::XTRACK){
-    //setup for xtrack only
-    pros::Task odo(odomX, &params);
-  }else if (con == odom::YTRACK){
+  if (con == odom::YTRACK){
     //setup for ytrack only
     pros::Task odo(odomY, &params);
   }else if (con == odom::XYTRACK){
     //setup for xytrack
     pros::Task odo(odomXY, &params);
+  }else{
+    return false
   }
   return true;
 
