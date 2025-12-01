@@ -93,7 +93,7 @@ while (go==1){
 }
 
 void odomY(void* param){
-initYParams* params = static_cast<initYParams*>(param);
+odomParams* params = static_cast<odomParams*>(param);
 // sV_in, float sS_in, int imu_port, int tracking_port
 
 sS = params->sS_in;
