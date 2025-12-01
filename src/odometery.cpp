@@ -93,7 +93,7 @@ while (go==1){
 }
 
 void odomY(void* param){
-TaskParams* params = static_cast<TaskParams*>(param);
+initYParams* params = static_cast<initYParams*>(param);
 // sV_in, float sS_in, int imu_port, int tracking_port
 
 sS = params->sS_in;
@@ -101,7 +101,7 @@ sV = params->sV_in;
 float diameter = params->YwheelDiameter;
 
 pros::IMU imu (params->imu_port);
-pros::Rotation vert_m(params->vert_port);
+pros::Rotation vert_r(params->vert_port);
 
 
 int go = 1;
