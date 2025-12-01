@@ -67,7 +67,7 @@ void odomCalc(){
 
 
 void odomDrive(void* param){
-TaskParams* params = static_cast<TaskParams*>(param);
+initParams* params = static_cast<initParams*>(param);
 // sV_in, float sS_in, int imu_port, int tracking_port
 
 sS = params->sS_in;
@@ -75,8 +75,8 @@ sV = params->sV_in;
 float diameter = params->YwheelDiameter;
 float driveRatio = params->DriveRatio;
 
-pros::IMU imu (params->imu_port);
-pros::Motor vert_m(params->vert_port);
+pros::IMU& imu =  (params->imu);
+pros::Motor& vert_m = (params->driveMotor);
 
 
 int go = 1;
