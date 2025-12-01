@@ -1,7 +1,7 @@
 #include <vector>
 #include <cmath>
 #include "main.h" // IWYU pragma: keep
-#include "odom.hpp"
+#include "ascentLib/odom.hpp"
 #include "pros/motors.hpp"
 #include "pros/rotation.hpp"
 
@@ -107,7 +107,7 @@ pros::Rotation& vert_r = (params->vert);
 int go = 1;
 while (go==1){
   horiz = 0; 
-  vert = (vert_m.get_position() * (diameter * M_PI)/ 360) / 100;// I used 4 inch wheels, so the 4 would be changed to what every size wheels And the 3/5 is the gear ratio
+  vert = (vert_r.get_position() * (diameter * M_PI)/ 360) / 100;// I used 4 inch wheels, so the 4 would be changed to what every size wheels And the 3/5 is the gear ratio
   theta = imu.get_heading() * (M_PI/180); // gets the inertial and converts to radians
   updateDeltas();
   odomCalc();
@@ -118,7 +118,7 @@ while (go==1){
 }
 
 void odomX(void* param){
-TaskParams* params = static_cast<TaskParams*>(param);
+initParams* params = static_cast<initParams*>(param);
 // sV_in, float sS_in, int imu_port, int tracking_port
 
 sS = params->sS_in;
@@ -184,7 +184,7 @@ bool init_odom(enum odom::config con, TaskParams params){
     //setup for xtrack only
     pros::Task odo(odomX, &params);
   }else{
-    return false
+    return false;
   }
   return true;
 
@@ -198,7 +198,7 @@ bool init_odom(enum odom::config con, odomParams params){
     //setup for xytrack
     pros::Task odo(odomXY, &params);
   }else{
-    return false
+    return false;
   }
   return true;
 
