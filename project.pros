@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "ToPoint",
+    "project_name": "ascentLib",
     "target": "v5",
     "templates": {
       "kernel": {
@@ -592,9 +592,9 @@
       }
     },
     "upload_options": {
-      "icon": "pros",
-      "description": "Yay",
-      "slot": 3
+      "icon": "X",
+      "description": "Odometery and Motion",
+      "slot": 2
     },
     "use_early_access": false
   }
