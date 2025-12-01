@@ -1,0 +1,127 @@
+#include "main.h" // IWYU pragma: keep
+#include "odom.hpp"
+#include "pros/imu.hpp"
+#include "pros/rtos.hpp"
+#include <iostream> 
+#include <cstdlib> // For integer abs()
+#include <cmath>
+#include <utility>
+#include <algorithm> 
+
+int sgn(float val){
+  if (val > 0){
+    return 1;
+  }else if(val < 0){
+    return -1;
+  }else{
+    return 0;
+  }
+}
+
+double angleWraper(double value){
+  double wrapped = fmod(value + 180.0, 360.0);
+  if (wrapped < 0) {
+      wrapped += 360.0;
+  }
+  return wrapped - 180.0;
+}
+
+namespace control{
+float outA;
+float outL; 
+class PID{
+  public:
+  float kP;
+  float kI;
+  float kD;
+//        self.sig = 1
+  float integral = 0;
+  int start = 0;
+  float prevError = 0;
+  float out = 0;
+  float derivative;
+    PID(float inkP, float inkI, float inkD){
+        kP = inkP;
+        kI = inkI;
+        kD = inkD;
+    }
+
+    float update(float sig){
+        float error = sig;
+            
+        if (start == 0){
+          prevError = error;
+          start = 1;
+        }
+        integral += error;
+        derivative = error - prevError;
+        float output =  kP * error + kI * integral + kD * derivative;
+        prevError = error;
+        return output;
+    }
+
+    float update(float sig, float pos){
+        float error = sig - pos;   
+        if (start == 0){
+          prevError = error;
+          start = 1;
+        }
+        integral += error;
+        derivative = error - prevError;
+        float output =  kP * error + kI * integral + kD * derivative;
+        prevError = error;
+        return output;
+    }
+};
+
+PID angularPID(1,0.1,12);
+PID lateralPID(1,0,6);
+
+// std::vector<double> get_vals(float sigX,float sigY, int dir){
+  
+//   float angled = atan2(sigY - odom::yPos, sigX - odom::xPos) * (180/M_PI);
+//   outA = angularPID.update(angleWraper(angled - imu.get_heading()));
+//   float dist = hypot(sigX-odom::xPos,sigY-odom::yPos);
+//   outL = lateralPID.update(dist*dir);
+//   return {outL, outA, angleWraper(angled - imu.get_heading()), dist};
+  
+// }
+
+std::vector<double> get_vals(float sigX,float sigY){
+  
+//   float angled = atan2(sigY - odom::yPos, sigX - odom::xPos) * (180/M_PI);
+//   outA = angularPID.update(angleWraper(angled - imu.get_heading()));
+//   float dist = hypot(sigX-odom::xPos,sigY-odom::yPos);
+//   outL = lateralPID.update(dist);
+//   return {outL, outA, angleWraper(angled - imu.get_heading()), dist};
+return {0,0,0,0};
+  
+}
+
+void control(float tarX, float tarY, float tarTheta){
+  int count = 0;
+    do{
+
+      std::vector<double> outs = get_vals(tarX, tarY);
+      float left_out = outs[0] - outs[1];
+      float right_out = outs[0] + outs[1];
+      count = count + 1;
+      pros::lcd::print(0, "%f %f", outs[2], outs[3]); 
+                    
+      // float drive = lateralPID.update(50, right_mg.get_position() * (4 * M_PI) * (0.6) / 360);
+      // float left_out = drive;
+      // float right_out =  drive;
+
+    //   right_mg.move_velocity(right_out);
+    //   left_mg.move_velocity(left_out);  
+      // if (dist_err < 0.5){
+      //   break;
+      // }    
+      pros::delay(10);
+    }while(1==1);
+    pros::lcd::print(0, "All done");
+    // right_mg.move_velocity(0);
+    // left_mg.move_velocity(0); 
+}
+
+}
