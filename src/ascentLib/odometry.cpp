@@ -2,6 +2,7 @@
 #include <cmath>
 #include "main.h" // IWYU pragma: keep
 #include "ascentLib/odom.hpp"
+#include "pros/motor_group.hpp"
 #include "pros/motors.hpp"
 #include "pros/rotation.hpp"
 
@@ -75,15 +76,15 @@ sV = params->sV_in;
 float diameter = params->YwheelDiameter;
 float driveRatio = params->DriveRatio;
 
-pros::IMU& imu =  (params->imu);
-pros::Motor& vert_m = (params->driveMotor);
+pros::IMU* imu =  (params->imu);
+pros::MotorGroup* vert_m = (params->driveMotor);
 
 
 int go = 1;
 while (go==1){
   horiz = 0;
-  vert = vert_m.get_position() * (diameter * M_PI) * driveRatio / 360;// I used 4 inch wheels, so the 4 would be changed to what every size wheels And the 3/5 is the gear ratio
-  theta = imu.get_heading() * (M_PI/180); // gets the inertial and converts to radians
+  vert = vert_m->get_position() * (diameter * M_PI) * driveRatio / 360;// I used 4 inch wheels, so the 4 would be changed to what every size wheels And the 3/5 is the gear ratio
+  theta = imu->get_heading() * (M_PI/180); // gets the inertial and converts to radians
   updateDeltas();
   odomCalc();
   updatePrev();
@@ -100,15 +101,15 @@ sS = params->sS_in;
 sV = params->sV_in;
 float diameter = params->YwheelDiameter;
 
-pros::IMU& imu = (params->imu);
-pros::Rotation& vert_r = (params->vert);
+pros::IMU* imu = (params->imu);
+pros::Rotation* vert_r = (params->vert);
 
 
 int go = 1;
 while (go==1){
   horiz = 0; 
-  vert = (vert_r.get_position() * (diameter * M_PI)/ 360) / 100;// I used 4 inch wheels, so the 4 would be changed to what every size wheels And the 3/5 is the gear ratio
-  theta = imu.get_heading() * (M_PI/180); // gets the inertial and converts to radians
+  vert = (vert_r->get_position() * (diameter * M_PI)/ 360) / 100;// I used 4 inch wheels, so the 4 would be changed to what every size wheels And the 3/5 is the gear ratio
+  theta = imu->get_heading() * (M_PI/180); // gets the inertial and converts to radians
   updateDeltas();
   odomCalc();
   updatePrev();
@@ -128,16 +129,16 @@ float Ydiameter = params->YwheelDiameter;
 float driveRatio = params->DriveRatio;
 
 
-pros::Motor& vert_m = (params->driveMotor);
-pros::IMU& imu = (params->imu);
-pros::Rotation& horiz_m = (params->horiz);
+pros::MotorGroup* vert_m = (params->driveMotor);
+pros::IMU* imu = (params->imu);
+pros::Rotation* horiz_m = (params->horiz);
 
 
 int go = 1;
 while (go==1){
-  horiz = (horiz_m.get_position() * (Xdiameter * M_PI)/ 360)/100; //This is temporary becuase I dont feel like seting up a traking wheel, and dont have a rotation sensor
-  vert = (vert_m.get_position() * (Ydiameter * M_PI) * driveRatio / 360);// I used 4 inch wheels, so the 4 would be changed to what every size wheels And the 3/5 is the gear ratio
-  theta = imu.get_heading() * (M_PI/180); // gets the inertial and converts to radians
+  horiz = (horiz_m->get_position() * (Xdiameter * M_PI)/ 360)/100; //This is temporary becuase I dont feel like seting up a traking wheel, and dont have a rotation sensor
+  vert = (vert_m->get_position() * (Ydiameter * M_PI) * driveRatio / 360);// I used 4 inch wheels, so the 4 would be changed to what every size wheels And the 3/5 is the gear ratio
+  theta = imu->get_heading() * (M_PI/180); // gets the inertial and converts to radians
   updateDeltas();
   odomCalc();
   updatePrev();
@@ -155,16 +156,16 @@ sV = params->sV_in;
 float YwheelDiameter = params->YwheelDiameter;
 float XwheelDiameter = params->XwheelDiameter;
 
-pros::IMU& imu = (params->imu);
-pros::Rotation& horiz_m = (params->horiz);
-pros::Rotation& vert_m = (params->vert);
+pros::IMU* imu = (params->imu);
+pros::Rotation* horiz_m = (params->horiz);
+pros::Rotation* vert_m = (params->vert);
 
 
 int go = 1;
 while (go==1){
-  horiz = (horiz_m.get_position() * (XwheelDiameter * M_PI) / 360) / 100;
-  vert = (vert_m.get_position() * (YwheelDiameter * M_PI) / 360) / 100;// I used 4 inch wheels, so the 4 would be changed to what every size wheels And the 3/5 is the gear ratio
-  theta = imu.get_heading() * (M_PI/180); // gets the inertial and converts to radians
+  horiz = (horiz_m->get_position() * (XwheelDiameter * M_PI) / 360) / 100;
+  vert = (vert_m->get_position() * (YwheelDiameter * M_PI) / 360) / 100;// I used 4 inch wheels, so the 4 would be changed to what every size wheels And the 3/5 is the gear ratio
+  theta = imu->get_heading() * (M_PI/180); // gets the inertial and converts to radians
   updateDeltas();
   odomCalc();
   updatePrev();
@@ -176,7 +177,7 @@ while (go==1){
 
 //functions to initiallize the odom system
 
-bool init_odom(enum odom::config con, TaskParams params){
+bool init_odom(enum odom::config con, initParams params){
   if (con == odom::DRIVE){
     //setup for drive only
     pros::Task odo(odomDrive, &params);

@@ -99,10 +99,8 @@ void autonomous() {}
  */
 void opcontrol() {
   // example initialization of odometery system
-  odom::TaskParams params;
+  odom::initParams params(&imu, &left_mg, nullptr);
   params.sV_in = 7.0;
-  params.imu_port = 5;
-  params.vert_port = 1;
   params.YwheelDiameter = 4.0;
   
   odom::init_odom(odom::DRIVE, params);
