@@ -100,8 +100,8 @@ sS = params->sS_in;
 sV = params->sV_in;
 float diameter = params->YwheelDiameter;
 
-pros::IMU imu (params->imu_port);
-pros::Rotation vert_r(params->vert_port);
+pros::IMU& imu = (params->imu);
+pros::Rotation& vert_r = (params->vert);
 
 
 int go = 1;
@@ -128,9 +128,9 @@ float Ydiameter = params->YwheelDiameter;
 float driveRatio = params->DriveRatio;
 
 
-pros::Motor vert_m(params->vert_port);
-pros::IMU imu (params->imu_port);
-pros::Rotation horiz_m(params->horiz_port);
+pros::Motor& vert_m = (params->driveMotor);
+pros::IMU& imu = (params->imu);
+pros::Rotation& horiz_m = (params->horiz);
 
 
 int go = 1;
@@ -147,7 +147,7 @@ while (go==1){
 }
 
 void odomXY(void* param){
-TaskParams* params = static_cast<TaskParams*>(param);
+odomParams* params = static_cast<odomParams*>(param);
 // sV_in, float sS_in, int imu_port, int tracking_port
 
 sS = params->sS_in;
@@ -155,9 +155,9 @@ sV = params->sV_in;
 float YwheelDiameter = params->YwheelDiameter;
 float XwheelDiameter = params->XwheelDiameter;
 
-pros::IMU imu (params->imu_port);
-pros::Rotation horiz_m(params->horiz_port);
-pros::Rotation vert_m(params->vert_port);
+pros::IMU& imu = (params->imu);
+pros::Rotation& horiz_m = (params->horiz);
+pros::Rotation& vert_m = (params->vert);
 
 
 int go = 1;
@@ -176,47 +176,25 @@ while (go==1){
 
 //functions to initiallize the odom system
 
-bool init_odom(enum odom::config con, float sV_in, int imu_port, int tracking_port, float wheelDiameter){
-  //code to setup encoders and imu
-  TaskParams inputParams;
-    inputParams.sV_in = sV_in;
-    inputParams.sS_in = 0;
-    inputParams.imu_port = imu_port;
-    inputParams.vert_port = tracking_port;
-    inputParams.YwheelDiameter = wheelDiameter;
-
+bool init_odom(enum odom::config con, TaskParams params){
   if (con == odom::DRIVE){
     //setup for drive only
-    pros::Task odo(odomDrive, &inputParams);
+    pros::Task odo(odomDrive, &params);
+  }else if (con == odom::XTRACK){
+    //setup for xtrack only
+    pros::Task odo(odomX, &params);
   }else if (con == odom::YTRACK){
     //setup for ytrack only
-    pros::Task odo(odomY, &inputParams);
-  }
-  return true;
-}
-
-bool init_odom(enum odom::config con, float sV_in, float sS_in, int imu_port, int horiz_port, int vert_port, float YwheelDiameter, float XwheelDiameter){
-  //code to setup encoders and imu
-  TaskParams inputParams;
-    inputParams.sV_in = sV_in;
-    inputParams.sS_in = sS_in;
-    inputParams.imu_port = imu_port;
-    inputParams.vert_port = vert_port;
-    inputParams.horiz_port = horiz_port;
-    inputParams.YwheelDiameter = YwheelDiameter;
-    inputParams.XwheelDiameter = XwheelDiameter;
-
-  if (con == odom::YTRACK){
-    //setup for xtrack only
-    pros::Task odo(odomY, &inputParams);
+    pros::Task odo(odomY, &params);
   }else if (con == odom::XYTRACK){
     //setup for xytrack
-    pros::Task odo(odomXY, &inputParams);
+    pros::Task odo(odomXY, &params);
   }
   return true;
+
 }
 
-bool init_odom(enum odom::config con, TaskParams params){
+bool init_odom(enum odom::config con, odomParams params){
   if (con == odom::DRIVE){
     //setup for drive only
     pros::Task odo(odomDrive, &params);
