@@ -102,11 +102,12 @@ void opcontrol() {
   odom::initParams params(&imu, &right_mg, nullptr);
   params.sV_in = 7.0;
   params.YwheelDiameter = 4.0;
+  params.DriveRatio = 0.60;
   
   odom::init_odom(odom::DRIVE, params);
 
   while (true) {
-  pros::lcd::print(0, "X: %f Y: %f", odom::getVals()[0], odom::getVals()[1]);
+  pros::lcd::print(0, "X: %f Y: %f", odom::getPos()[0], odom::getPos()[1]);
   pros::delay(10);
   }
 	

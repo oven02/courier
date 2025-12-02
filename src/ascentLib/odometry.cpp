@@ -25,6 +25,8 @@ float yPos = 0;
 float sV;
 float sS;
 
+std::vector<float> DeltaCoords;
+
 void updateDeltas(){
   thetaDelta = theta - prevAngle;
   vertDelta = vert - prevVert;
@@ -42,7 +44,7 @@ void odomCalc(){
   float deltaX;
   float deltaY;
   float rot;
-  std::vector<float> DeltaCoords;
+  
 
   //float angleDelta = (leftDelta - rightDelta) / (sL + sR); // if we lacked a IMU we could use this
 
@@ -178,13 +180,16 @@ while (go==1){
 //functions to initiallize the odom system
 
 bool init_odom(enum odom::config con, initParams params){
+  initParams* heap_params = new initParams(params);
+
   if (con == odom::DRIVE){
     //setup for drive only
-    pros::Task odo(odomDrive, &params);
+    pros::Task odo(odomDrive, heap_params);
   }else if (con == odom::XTRACK){
     //setup for xtrack only
-    pros::Task odo(odomX, &params);
+    pros::Task odo(odomX, heap_params);
   }else{
+    delete heap_params;
     return false;
   }
   return true;
@@ -192,13 +197,16 @@ bool init_odom(enum odom::config con, initParams params){
 }
 
 bool init_odom(enum odom::config con, odomParams params){
+  odomParams* heap_params = new odomParams(params);
+
   if (con == odom::YTRACK){
     //setup for ytrack only
-    pros::Task odo(odomY, &params);
+    pros::Task odo(odomY, heap_params);
   }else if (con == odom::XYTRACK){
     //setup for xytrack
-    pros::Task odo(odomXY, &params);
+    pros::Task odo(odomXY, heap_params);
   }else{
+    delete heap_params;
     return false;
   }
   return true;
