@@ -209,6 +209,10 @@ std::vector<double> getPos(){
   return {xPos, yPos, theta * (180/M_PI)};
 }
 
+std::vector<double> getVals(){
+  return {vert, horiz, theta * (180/M_PI)};  
+}
+
 
 
 

@@ -106,7 +106,7 @@ void opcontrol() {
   odom::init_odom(odom::DRIVE, params);
 
   while (true) {
-  pros::lcd::print(0, "X: %f Y: %f", odom::getPos()[0], odom::getPos()[1]);
+  pros::lcd::print(0, "X: %f Y: %f", odom::getVals()[0], odom::getVals()[1]);
   pros::delay(10);
   }
 	
