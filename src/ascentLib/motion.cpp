@@ -8,6 +8,14 @@
 #include <utility>
 #include <algorithm> 
 
+
+
+namespace control{
+
+float right_out = 0;
+float left_out = 0;
+float dist;
+
 int sgn(float val){
   if (val > 0){
     return 1;
@@ -26,7 +34,6 @@ double angleWraper(double value){
   return wrapped - 180.0;
 }
 
-namespace control{
 float outA;
 float outL; 
 class PID{
@@ -72,6 +79,14 @@ class PID{
         prevError = error;
         return output;
     }
+
+    void reset(){
+      integral = 0;
+      start = 0;
+      prevError = 0;
+      out = 0;
+      derivative = 0;
+    }
 };
 
 PID angularPID(1,0.1,12);
@@ -87,26 +102,28 @@ PID lateralPID(1,0,6);
   
 // }
 
-std::vector<double> get_vals(float sigX,float sigY){
+std::vector<double> toPointStep(float sigX,float sigY){
   
-//   float angled = atan2(sigY - odom::yPos, sigX - odom::xPos) * (180/M_PI);
-//   outA = angularPID.update(angleWraper(angled - imu.get_heading()));
-//   float dist = hypot(sigX-odom::xPos,sigY-odom::yPos);
-//   outL = lateralPID.update(dist);
-//   return {outL, outA, angleWraper(angled - imu.get_heading()), dist};
-return {0,0,0,0};
+  float angled = atan2(sigY - odom::yPos, sigX - odom::xPos) * (180/M_PI);
+  outA = angularPID.update((angled));
+  float dist = hypot(sigX-odom::xPos,sigY-odom::yPos);
+  outL = lateralPID.update(dist);
+  return {outL, outA, angleWraper(angled), dist};
   
 }
 
-void control(float tarX, float tarY, float tarTheta){
+void toPoint(float tarX, float tarY, float exit){
   int count = 0;
+
+  angularPID.reset();
+  lateralPID.reset();
     do{
 
-      std::vector<double> outs = get_vals(tarX, tarY);
-      float left_out = outs[0] - outs[1];
-      float right_out = outs[0] + outs[1];
+      std::vector<double> outs = toPointStep(tarX, tarY);
+      left_out = outs[0] - outs[1];
+      right_out = outs[0] + outs[1];
       count = count + 1;
-      pros::lcd::print(0, "%f %f", outs[2], outs[3]); 
+      //pros::lcd::print(0, "%f %f", outs[2], outs[3]); 
                     
       // float drive = lateralPID.update(50, right_mg.get_position() * (4 * M_PI) * (0.6) / 360);
       // float left_out = drive;
@@ -118,10 +135,13 @@ void control(float tarX, float tarY, float tarTheta){
       //   break;
       // }    
       pros::delay(10);
-    }while(1==1);
-    pros::lcd::print(0, "All done");
-    // right_mg.move_velocity(0);
-    // left_mg.move_velocity(0); 
+    }while(dist > exit);
+    left_out = 0;
+    right_out = 0;
 }
+
+std::vector<float> getOuts(){
+  return {right_out,left_out}
+} 
 
 }

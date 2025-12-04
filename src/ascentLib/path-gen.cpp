@@ -44,7 +44,7 @@ std::vector<std::pair<float, float>> spline(enum degree deg, std::vector<std::pa
         return out;
     }else if (deg == FIVE){
         for(float t = 0; t <= 1; t += 1.0f/samples){
-            
+            (std::pow(1-t,4)*x0+4*std::pow(1-t, 3)*t*x1+6\left(1-t\right)^{2}t^{2}P_{x2}+4\left(1-t\right)t^{3}P_{x3}+t^{4}P_{x4},\left(1-t\right)^{4}P_{y0}+4\left(1-t\right)^{3}tP_{y1}+6\left(1-t\right)^{2}t^{2}P_{y2}+4\left(1-t\right)t^{3}P_{y3}+t^{4}P_{y4}\right)
         }
     }
     return {{0,0}};
