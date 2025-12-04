@@ -1,5 +1,5 @@
 #include "main.h" // IWYU pragma: keep
-#include "odom.hpp"
+#include "ascentLib/odom.hpp"
 #include "pros/imu.hpp"
 #include "pros/rtos.hpp"
 #include <iostream> 
@@ -99,11 +99,10 @@ void autonomous() {}
  */
 void opcontrol() {
   // example initialization of odometery system
-  odom::TaskParams params;
+  odom::initParams params(&imu, &right_mg, nullptr);
   params.sV_in = 7.0;
-  params.imu_port = 5;
-  params.vert_port = 1;
   params.YwheelDiameter = 4.0;
+  params.DriveRatio = 0.60;
   
   odom::init_odom(odom::DRIVE, params);
 
