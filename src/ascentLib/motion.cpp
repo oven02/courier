@@ -102,11 +102,11 @@ PID lateralPID(1,0,6);
   
 // }
 
-std::vector<double> toPointStep(float sigX,float sigY){
+std::vector<double> toPointStep(float sigX,float sigY,std::vector<float> pos){
   
-  float angled = atan2(sigY - odom::yPos, sigX - odom::xPos) * (180/M_PI);
+  float angled = atan2(sigY - pos[1], sigX - pos[0]) * (180/M_PI);
   outA = angularPID.update((angled));
-  float dist = hypot(sigX-odom::xPos,sigY-odom::yPos);
+  dist = hypot(sigX-pos[0],sigY-pos[1]);
   outL = lateralPID.update(dist);
   return {outL, outA, angleWraper(angled), dist};
   
@@ -119,23 +119,38 @@ void toPoint(float tarX, float tarY, float exit){
   lateralPID.reset();
     do{
 
-      std::vector<double> outs = toPointStep(tarX, tarY);
+      std::vector<double> outs = toPointStep(tarX, tarY, odom::getPos());
       left_out = outs[0] - outs[1];
       right_out = outs[0] + outs[1];
       count = count + 1;
-      //pros::lcd::print(0, "%f %f", outs[2], outs[3]); 
-                    
-      // float drive = lateralPID.update(50, right_mg.get_position() * (4 * M_PI) * (0.6) / 360);
-      // float left_out = drive;
-      // float right_out =  drive;
-
-    //   right_mg.move_velocity(right_out);
-    //   left_mg.move_velocity(left_out);  
-      // if (dist_err < 0.5){
-      //   break;
-      // }    
+        
       pros::delay(10);
     }while(dist > exit);
+    left_out = 0;
+    right_out = 0;
+}
+
+std::vector<double> toAngleStep(float theta, std::vector<float> pos){
+  
+  float angled = theta - (pos[2]);
+  outA = angularPID.update(angleWraper(angled));
+
+  return {outA, angled};
+  
+}
+
+void toAng(float tarT, float exit){
+
+  angularPID.reset();
+  lateralPID.reset();
+    do{
+
+      std::vector<double> outs = toAngleStep(tarT, odom::getPos());
+      left_out = -outs[0];
+      right_out = outs[0];
+        
+      pros::delay(10);
+    }while(outs[1] > exit);
     left_out = 0;
     right_out = 0;
 }
