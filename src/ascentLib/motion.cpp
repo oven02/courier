@@ -1,5 +1,6 @@
 #include "main.h" // IWYU pragma: keep
-#include "odom.hpp"
+#include "ascentLib/odom.hpp"
+#include "ascentLib/motion.hpp"
 #include "pros/imu.hpp"
 #include "pros/rtos.hpp"
 #include <iostream> 
@@ -36,30 +37,20 @@ double angleWraper(double value){
 float outA;
 float outL; 
 
-class PID{
-  public:
-  float kP;
-  float kI;
-  float kD;
-//        self.sig = 1
-  float integral = 0;
-  int start = 0;
-  float prevError = 0;
-  float out = 0;
-  float derivative;
-    PID(float inkP, float inkI, float inkD){
+
+PID::PID(float inkP, float inkI, float inkD){
         kP = inkP;
         kI = inkI;
         kD = inkD;
-    }
+}
 
-    void changeVals(float inkP, float inkI, float inkD){
+void PID::changeVals(float inkP, float inkI, float inkD){
         kP = inkP;
         kI = inkI;
         kD = inkD;
-    }
+}
 
-    float update(float sig){
+    float PID::update(float sig){
         float error = sig;
             
         if (start == 0){
@@ -73,7 +64,7 @@ class PID{
         return output;
     }
 
-    float update(float sig, float pos){
+    float PID::update(float sig, float pos){
         float error = sig - pos;   
         if (start == 0){
           prevError = error;
@@ -86,25 +77,24 @@ class PID{
         return output;
     }
 
-    void reset(){
+    void PID::reset(){
       integral = 0;
       start = 0;
       prevError = 0;
       out = 0;
       derivative = 0;
     }
-};
 
 PID angularPID(1,0.1,12);
 PID lateralPID(1,0,6);
 
 void initMotion(chassis* initC, std::vector<float> angV, std::vector<float> latV){
    mainChassis = initC;
-   angularPID.changeVals(angV[0],angV[1],angV[2])
-   lateralPID.changeVals(latV[0],latV[1],latV[2])
+   angularPID.changeVals(angV[0],angV[1],angV[2]);
+   lateralPID.changeVals(latV[0],latV[1],latV[2]);
 }
 
-std::vector<double> toPointStep(float sigX,float sigY,std::vector<float> pos){
+std::vector<double> toPointStep(float sigX,float sigY, std::vector<double> pos){
   
   float angled = atan2(sigY - pos[1], sigX - pos[0]) * (180/M_PI);
   outA = angularPID.update((angled));
@@ -134,7 +124,7 @@ void toPoint(float tarX, float tarY, float exit){
     right_out = 0;
 }
 
-std::vector<double> toAngleStep(float theta, std::vector<float> pos){
+std::vector<double> toAngleStep(float theta, std::vector<double> pos){
   
   float angled = theta - (pos[2]);
   outA = angularPID.update(angleWraper(angled));
@@ -147,6 +137,7 @@ void toAng(float tarT, float exit){
 
   angularPID.reset();
   lateralPID.reset();
+  float err;
     do{
 
       std::vector<double> outs = toAngleStep(tarT, odom::getPos());
@@ -156,11 +147,12 @@ void toAng(float tarT, float exit){
       mainChassis->rightMotors->move_velocity(right_out);  
 
       pros::delay(10);
-    }while(outs[1] > exit);
+      err = outs[1];
+    }while(err > exit);
     left_out = 0;
     right_out = 0;
 }
 
-std::vector<float> getOuts(){
-  return {right_out,left_out}
+std::vector<double> getOuts(){
+  return {right_out,left_out};
 } 

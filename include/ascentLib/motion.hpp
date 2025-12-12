@@ -1,17 +1,25 @@
 #pragma once
 
 #include <vector>
-#include <main.h>
+#include "main.h"
 
 class PID{
     public:
+    float kP;
+    float kI;
+    float kD;
+    float integral = 0;
+    int start = 0;
+    float prevError = 0;
+    float out = 0;
+    float derivative;
     PID(float inkP, float inkI, float inkD);
     void changeVals(float inkP, float inkI, float inkD);
     float update(float sig);
     float update(float sig, float pos);
     void reset();
     
-}
+};
 
 std::vector<double> toPointStep(float sigX,float sigY, std::vector<float> pos);
 void toPoint(float tarX, float tarY, float exit);
@@ -27,6 +35,6 @@ struct chassis {
         pros::Rotation* horiz;
         pros::Rotation* vert;
 
-        initParams(pros::IMU* val, pros::MotorGroup* val1, pros::MotorGroup* val2, pros::Rotation* val3, pros::Rotation* val4) : imu(val), leftMotors(val1), rightMotors(val1), horiz(val2), vert(val2) {}
+        chassis(pros::IMU* val, pros::MotorGroup* val1, pros::MotorGroup* val2, pros::Rotation* val3, pros::Rotation* val4) : imu(val), leftMotors(val1), rightMotors(val1), horiz(val3), vert(val4) {}
     };
 
