@@ -2,6 +2,7 @@
 #include <cmath>
 #include "main.h" // IWYU pragma: keep
 #include "ascentLib/odom.hpp"
+#include "ascentLib/util.hpp"
 #include "pros/motor_group.hpp"
 #include "pros/motors.hpp"
 #include "pros/rotation.hpp"
@@ -215,6 +216,15 @@ bool init_odom(enum odom::config con, odomParams params){
 
 std::vector<double> getPos(){
   return {xPos, yPos, theta * (180/M_PI)};
+}
+
+Point getPoint(){
+  Point out(xPos, yPos)
+  return out;
+}
+
+float getAng(){
+  return theta * (180/M_PI);
 }
 
 std::vector<double> getVals(){

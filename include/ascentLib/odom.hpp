@@ -4,6 +4,7 @@
 #include "pros/motor_group.hpp"
 #include "pros/motors.hpp"
 #include "pros/rotation.hpp"
+#include "ascentLib/util.hpp"
 #include <vector>
 
 namespace odom {
@@ -65,4 +66,7 @@ bool init_odom(enum odom::config con, float sV_in, int imu_port, int tracking_po
 bool init_odom(enum odom::config con, float sV_in, float sS_in, int imu_port, int horiz_port, int vert_port, float YwheelDiameter, float XwheelDiameter);
 std::vector<double> getPos();
 std::vector<double> getVals();
+Point getPoint();
+float getAng();
+
 }
