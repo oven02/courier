@@ -219,7 +219,7 @@ std::vector<double> getPos(){
 }
 
 Point getPoint(){
-  Point out(xPos, yPos)
+  Point out(xPos, yPos);
   return out;
 }
 

@@ -172,14 +172,6 @@ float pt_to_pt_distance (Point pt1,std::pair<float, float> pt2){
     return distance;
 }
 
-float sgn (float num){
-  if (num >= 0){
-    return 1;
-  }else{
-    return -1;
-  }
-}
-
 Point currentPos = Point(0, 0);
 float currentHeading = 0;
 float lastFoundIndex = 0;
@@ -293,7 +285,7 @@ void follow(std::vector<std::pair<float,float>> path, float exit, float lookDis)
       outL = lateralPID.update(dist);
       left_out = outL - outs[3];
       right_out = outL + outs[3];
-      LFINDEX = outs[2]
+      LFINDEX = outs[2];
 
       mainChassis->leftMotors->move_velocity(left_out);
       mainChassis->rightMotors->move_velocity(right_out);

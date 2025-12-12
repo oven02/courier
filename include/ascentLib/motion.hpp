@@ -37,10 +37,3 @@ struct chassis {
 
         chassis(pros::IMU* val, pros::MotorGroup* val1, pros::MotorGroup* val2, pros::Rotation* val3, pros::Rotation* val4) : imu(val), leftMotors(val1), rightMotors(val1), horiz(val3), vert(val4) {}
     };
-
-struct Point {
-            float x;
-            float y;
-
-            Point(double x_val, double y_val) : x(x_val), y(y_val) {}
-        };
