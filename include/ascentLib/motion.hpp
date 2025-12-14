@@ -21,13 +21,6 @@ class PID{
     
 };
 
-std::vector<double> toPointStep(float sigX,float sigY, std::vector<float> pos);
-void toPoint(float tarX, float tarY, float exit);
-std::vector<double> getOuts();
-
-std::vector<double> toPointStep(float sigX,float sigY, std::vector<float> pos);
-void toPoint(float tarT, float exit);
-
 struct chassis {
         pros::IMU* imu;
         pros::MotorGroup* leftMotors;
@@ -35,5 +28,20 @@ struct chassis {
         pros::Rotation* horiz;
         pros::Rotation* vert;
 
-        chassis(pros::IMU* val, pros::MotorGroup* val1, pros::MotorGroup* val2, pros::Rotation* val3, pros::Rotation* val4) : imu(val), leftMotors(val1), rightMotors(val1), horiz(val3), vert(val4) {}
+        chassis(pros::IMU* val, pros::MotorGroup* val1, pros::MotorGroup* val2, pros::Rotation* val3, pros::Rotation* val4) : imu(val), leftMotors(val1), rightMotors(val2), horiz(val3), vert(val4) {}
     };
+
+void initMotion(chassis* initC, std::vector<float> angV = {1,0,12}, std::vector<float> latV = {1,0,6});
+
+std::vector<double> toPointStep(float sigX,float sigY, std::vector<float> pos);
+void toPoint(float tarX, float tarY, float exit);
+
+std::vector<double> toAngleStep(float sigX,float sigY, std::vector<float> pos);
+void toAng(float tarT, float exit);
+
+std::vector<double> getOuts();
+
+std::vector<double> pure_pursuit_step(float sigX,float sigY, std::vector<float> pos);
+void follow(float tarT, float exit);
+
+

@@ -1,5 +1,6 @@
 #include "main.h" // IWYU pragma: keep
 #include "ascentLib/odom.hpp"
+#include "ascentLib/motion.hpp"
 #include "pros/imu.hpp"
 #include "pros/rtos.hpp"
 #include <iostream> 
@@ -106,10 +107,16 @@ void opcontrol() {
   
   odom::init_odom(odom::DRIVE, params);
 
-  while (true) {
+  chassis mainChassis(&imu, &left_mg, &right_mg, nullptr, nullptr);
+  initMotion(&mainChassis);
+  toAng(240, 5);
+
+  //toPoint(10, 10, 5);
+
+ /* while (true) {
   pros::lcd::print(0, "X: %f Y: %f", odom::getPos()[0], odom::getPos()[1]);
   pros::delay(10);
-  }
+  }*/
 	
 	
   //control::control(10,20,0);

@@ -86,7 +86,7 @@ void PID::changeVals(float inkP, float inkI, float inkD){
       derivative = 0;
     }
 
-PID angularPID(1,0.1,12);
+PID angularPID(1,0,12);
 PID lateralPID(1,0,6);
 
 void initMotion(chassis* initC, std::vector<float> angV, std::vector<float> latV){
@@ -118,6 +118,7 @@ void toPoint(float tarX, float tarY, float exit){
       count = count + 1;
       mainChassis->leftMotors->move_velocity(left_out);
       mainChassis->rightMotors->move_velocity(right_out);
+      pros::lcd::print(0, "Left: %f Right: %f", left_out, right_out);
         
       pros::delay(10);
     }while(dist > exit);
@@ -146,12 +147,14 @@ void toAng(float tarT, float exit){
       std::vector<double> outs = toAngleStep(tarT, odom::getPos());
       left_out = -outs[0];
       right_out = outs[0];
+      mainChassis->rightMotors->move_velocity(right_out);
       mainChassis->leftMotors->move_velocity(left_out);
-      mainChassis->rightMotors->move_velocity(right_out);  
+
+      pros::lcd::print(0, "left: %f right: %f error: %f", left_out, right_out, outs[1]);
 
       pros::delay(10);
       err = outs[1];
-    }while(err > exit);
+    }while(std::abs(err) > exit);
     left_out = 0;
     right_out = 0;
     mainChassis->leftMotors->move_velocity(left_out);
@@ -220,7 +223,7 @@ std::vector<float> pure_pursuit_step (std::vector<std::pair<float,float>> path, 
       float maxX = fmax(path[i].first, path[i+1].first);
       float maxY = fmax(path[i].second, path[i+1].second);
 
-      if (((minX <= sol_pt1.x <= maxX) && (minY <= sol_pt1.y <= maxY)) || ((minX <= sol_pt2.x <= maxX) && (minY <= sol_pt2.y <= maxY))){
+      if (((minX <= sol_pt1.x && sol_pt1.x <= maxX) && (minY <= sol_pt1.y && sol_pt1.y <= maxY)) || ((minX <= sol_pt2.x && sol_pt2.x <= maxX) && (minY <= sol_pt2.y && sol_pt2.y <= maxY))){
         intersectFound = true;
 
         if (((minX <= sol_pt1.x <= maxX) && (minY <= sol_pt1.y <= maxY)) && ((minX <= sol_pt2.x <= maxX) && (minY <= sol_pt2.y <= maxY))){

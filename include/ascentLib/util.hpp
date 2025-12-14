@@ -1,8 +1,15 @@
 #pragma once
+#include <limits>
 
 struct Point {
             float x;
             float y;
+            float theta = std::numeric_limits<float>::quiet_NaN();
 
-            Point(double x_val, double y_val) : x(x_val), y(y_val) {}
+        // Constructor
+            Point(float x, float y, float theta = std::numeric_limits<float>::quiet_NaN())
+                : x(x),
+                y(y),
+                theta(theta) {}
+
         };
