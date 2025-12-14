@@ -98,7 +98,7 @@ void initMotion(chassis* initC, std::vector<float> angV, std::vector<float> latV
 std::vector<double> toPointStep(float sigX,float sigY, std::vector<double> pos){
   
   float angled = atan2(sigY - pos[1], sigX - pos[0]) * (180/M_PI);
-  outA = angularPID.update((angled));
+  outA = angularPID.update(fmod((angled-180),360)+180);
   dist = hypot(sigX-pos[0],sigY-pos[1]);
   outL = lateralPID.update(dist);
   return {outL, outA, angleWraper(angled), dist};
