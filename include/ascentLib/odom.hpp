@@ -1,9 +1,6 @@
 #pragma once
 
-#include "pros/imu.hpp"
-#include "pros/motor_group.hpp"
-#include "pros/motors.hpp"
-#include "pros/rotation.hpp"
+#include "main.h"
 #include "ascentLib/util.hpp"
 #include <vector>
 
@@ -52,6 +49,8 @@ struct odomParams {
 
         odomParams(pros::IMU* val, pros::Rotation* val1, pros::Rotation* val2) : imu(val), vert(val1), horiz(val2) {}
     };
+
+
 
 void odomCalc();
 void updateDeltas();

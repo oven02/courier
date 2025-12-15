@@ -1,5 +1,6 @@
 #pragma once
 #include <limits>
+#include "main.h" // IWYU pragma: keep
 
 struct Point {
             float x;

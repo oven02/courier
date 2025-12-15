@@ -2,6 +2,7 @@
 
 #include <vector>
 #include "main.h"
+#include "ascentLib/util.hpp"
 
 class PID{
     public:
@@ -21,15 +22,7 @@ class PID{
     
 };
 
-struct chassis {
-        pros::IMU* imu;
-        pros::MotorGroup* leftMotors;
-        pros::MotorGroup* rightMotors;
-        pros::Rotation* horiz;
-        pros::Rotation* vert;
 
-        chassis(pros::IMU* val, pros::MotorGroup* val1, pros::MotorGroup* val2, pros::Rotation* val3, pros::Rotation* val4) : imu(val), leftMotors(val1), rightMotors(val2), horiz(val3), vert(val4) {}
-    };
 
 void initMotion(chassis* initC, std::vector<float> angV = {1,0,12}, std::vector<float> latV = {1,0,6});
 
