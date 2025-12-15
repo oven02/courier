@@ -15,7 +15,7 @@ float right_out = 0;
 float left_out = 0;
 float dist;
 
-chassis* mainChassis;
+
 
 int sgn(float val){
   if (val > 0){
