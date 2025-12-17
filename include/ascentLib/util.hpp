@@ -12,7 +12,6 @@ struct Point {
                 : x(x),
                 y(y),
                 theta(theta) {}
-
         };
 
 struct chassis{
