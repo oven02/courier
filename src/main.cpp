@@ -30,11 +30,9 @@ pros::Controller master(pros::E_CONTROLLER_MASTER);
 pros::MotorGroup left_mg({1});    // Creates a motor group with forwards ports 1 & 3 and reversed port 2
 pros::MotorGroup right_mg({-3});  // Creates a motor group with forwards port 5 and reversed ports 4 & 6
 pros::IMU imu (5);
+pros::Rotation horiz_tracking (6);
 
 
-
-
-  
 
 
 /**
@@ -100,14 +98,14 @@ void autonomous() {}
  */
 void opcontrol() {
   // example initialization of odometery system
-  odom::initParams params(&imu, &right_mg, nullptr);
+  odom::initParams params(&imu, &right_mg, &horiz_tracking);
   params.sV_in = 7.0;
   params.YwheelDiameter = 4.0;
   params.DriveRatio = 0.60;
   
   odom::init_odom(odom::DRIVE, params);
 
-  chassis mainChassis(&imu, &left_mg, &right_mg, nullptr, nullptr);
+  chassis mainChassis(&imu, &left_mg, &right_mg, &horiz_tracking, nullptr);
   initMotion(&mainChassis);
   toAng(240, 5);
 

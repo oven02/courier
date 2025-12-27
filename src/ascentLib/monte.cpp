@@ -16,7 +16,7 @@ std::normal_distribution<float> noise_y(0.0f,
                                         0.1f);
 std::normal_distribution<float> noise_theta(0.0f, 5.0f);
 
-point lastPoint(0,0,0);
+Point lastPoint(0,0,0);
 
 const int MCL_delay = 20;
 const float feild_dim = 144.0f;
@@ -47,7 +47,7 @@ const float DISTANCE_THRESHOLD_INCHES = 7.87f; // 200mm in inches
 // Add variables for update frequency control
 int lastUpdateTime = 0;           // Timestamp of the last MCL update
 const int UPDATE_INTERVAL = 1000; // Update interval in milliseconds (1 second)
-lemlib::Pose lastUpdatedPose(0, 0, 0); // Last pose at which MCL was updated
+Point lastUpdatedPose(0, 0, 0); // Last pose at which MCL was updated
 const float MIN_MOTION_THRESHOLD =
     0.25f; // Minimum motion in inches to trigger update
 
@@ -65,7 +65,7 @@ float prev_dist = -1.0f;
 const float DISTANCE_CHANGE_THRESHOLD = 0.25f; // Adjust based on sensor noise
 
 // Add this at the global scope
-point filteredPose(0, 0, 0); // {{ Added filteredPose }}
+Point filteredPose(0, 0, 0); // {{ Added filteredPose }}
 const float FILTER_ALPHA =
     0.3f; // Smoothing factor (0.3 = 30% new, 70% old) {{ Added FILTER_ALPHA }}
 const float ODOMETRY_TRUST_FACTOR =

@@ -1,8 +1,11 @@
 #pragma once
 #include <random>
-#include <algorithim>
+//#include <algorithim>
 #include <vector>
 #include <cmath>
+#include <limits>
+#include "main.h"
+#include "ascentLib/util.hpp"
 
 struct particle{
         float x;
