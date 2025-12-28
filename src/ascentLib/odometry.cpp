@@ -2,6 +2,7 @@
 #include <cmath>
 #include "main.h" // IWYU pragma: keep
 #include "ascentLib/odom.hpp"
+#include "ascentLib/util.hpp"
 #include "pros/motor_group.hpp"
 #include "pros/motors.hpp"
 #include "pros/rotation.hpp"
@@ -213,15 +214,53 @@ bool init_odom(enum odom::config con, odomParams params){
 
 }
 
+
+bool init_odom(enum odom::config con, chassis chass, TaskParams params){
+  TaskParams* heap_params = new TaskParams(params);
+  chassis* heap_chass = new chassis(chass);
+
+  if (con == odom::DRIVE){
+    //setup for drive only
+    initParams* init_params = new initParams(heap_chass->imu, heap_chass->leftMotors, heap_chass->horiz);
+    pros::Task odo(odomDrive, heap_params);
+  }else if (con == odom::XTRACK){
+    //setup for xtrack only
+    pros::Task odo(odomX, heap_params);
+  }else if (con == odom::YTRACK){
+    //setup for ytrack only
+    pros::Task odo(odomY, heap_params);
+  }else if (con == odom::XYTRACK){
+    //setup for xytrack
+    pros::Task odo(odomXY, heap_params);
+  }else{
+    delete heap_params;
+    return false;
+  }
+  return true;
+
+}
+
 std::vector<double> getPos(){
-  return {xPos, yPos, theta * (180/M_PI)};
+  return {-xPos, yPos, theta * (180/M_PI)};
+}
+
+Point getPoint(){
+  Point out(-xPos, yPos);
+  return out;
+}
+
+float getAng(){
+  return theta * (180/M_PI);
 }
 
 std::vector<double> getVals(){
   return {vert, horiz, theta * (180/M_PI)};  
 }
 
-
+void setOdom(float x, float y){
+  xPos = -x;
+  yPos = y;
+}
 
 
 } //Namespace odom

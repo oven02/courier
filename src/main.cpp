@@ -1,6 +1,8 @@
 #include "main.h" // IWYU pragma: keep
 #include "ascentLib/odom.hpp"
+#include "ascentLib/motion.hpp"
 #include "pros/imu.hpp"
+#include "pros/motor_group.hpp"
 #include "pros/rtos.hpp"
 #include <iostream> 
 #include <cstdlib> // For integer abs()
@@ -29,11 +31,9 @@ pros::Controller master(pros::E_CONTROLLER_MASTER);
 pros::MotorGroup left_mg({1});    // Creates a motor group with forwards ports 1 & 3 and reversed port 2
 pros::MotorGroup right_mg({-3});  // Creates a motor group with forwards port 5 and reversed ports 4 & 6
 pros::IMU imu (5);
+pros::Rotation horiz_tracking (6);
 
 
-
-
-  
 
 
 /**
@@ -99,17 +99,45 @@ void autonomous() {}
  */
 void opcontrol() {
   // example initialization of odometery system
-  odom::initParams params(&imu, &right_mg, nullptr);
+  odom::initParams params(&imu, &right_mg, &horiz_tracking);
   params.sV_in = 7.0;
   params.YwheelDiameter = 4.0;
   params.DriveRatio = 0.60;
   
   odom::init_odom(odom::DRIVE, params);
 
-  while (true) {
+  chassis mainChassis(&imu, &left_mg, &right_mg, &horiz_tracking, nullptr);
+  initMotion(&mainChassis, {1.25,0,12}, {5,0,6});
+  //turnToPoint(10,20, 1);
+
+  toPoint(0, 30, 5);
+  left_mg.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+  right_mg.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+  left_mg.brake();
+  right_mg.brake();
+  toAng(-135, 2);
+  odom::setOdom(0, 0);
+  toPoint(10, 10, 5, true);
+  odom::setOdom(10, 10);
+  toPoint(-33, -25, 5, false);
+  left_mg.brake();
+  right_mg.brake();
+  toAng(180, 0.75);
+  odom::setOdom(0, 0);
+  //pros::delay(1000);
+  toPoint(0, -10, 3);
+  left_mg.brake();
+  right_mg.brake();
+  pros::delay(1000);
+  odom::setOdom(0, 0);
+  toPoint(0, 30, 3, true);
+
+
+
+  /*while (true) {
   pros::lcd::print(0, "X: %f Y: %f", odom::getPos()[0], odom::getPos()[1]);
   pros::delay(10);
-  }
+  }*/
 	
 	
   //control::control(10,20,0);
