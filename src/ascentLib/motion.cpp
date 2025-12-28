@@ -9,6 +9,7 @@
 #include <cmath>
 #include <utility>
 #include <algorithm> 
+#include <vector>
 
 
 float right_out = 0;
@@ -86,22 +87,25 @@ void PID::changeVals(float inkP, float inkI, float inkD){
       derivative = 0;
     }
 
-PID angularPID(1,0,12);
+PID angularPID(1,0,6);
 PID lateralPID(1,0,6);
 
+chassis* motionChassis;
+
 void initMotion(chassis* initC, std::vector<float> angV, std::vector<float> latV){
-   mainChassis = initC;
+   motionChassis = initC;
    angularPID.changeVals(angV[0],angV[1],angV[2]);
    lateralPID.changeVals(latV[0],latV[1],latV[2]);
 }
 
-std::vector<double> toPointStep(float sigX,float sigY, std::vector<double> pos){
+std::vector<double> toPointStep(float sigX,float sigY, std::vector<double> pos, float angled){
   
-  float angled = atan2(sigY - pos[1], sigX - pos[0]) * (180/M_PI);
-  outA = angularPID.update(fmod((angled-180),360)+180);
+  
+  float wrapped = fmod(((-pos[2])-180),360)+180;
+  outA = angularPID.update(fmod(((angled-wrapped)-180),360)+180);
   dist = hypot(sigX-pos[0],sigY-pos[1]);
   outL = lateralPID.update(dist);
-  return {outL, outA, angleWraper(angled), dist};
+  return {outL, outA, wrapped, dist};
   
 }
 
@@ -110,22 +114,36 @@ void toPoint(float tarX, float tarY, float exit){
 
   angularPID.reset();
   lateralPID.reset();
+  std::vector<double> pos = odom::getPos();
+  //float angled = atan2(tarY - pos[1], tarX - pos[0]) * (180/M_PI);
+  float targetAngle = atan2(tarX - pos[0], tarY - pos[1]) * (180/M_PI);
     do{
+      std::vector<double> pos = odom::getPos();
+      
+      float currentHeading = -pos[2]; // Ensure this matches your odom heading
+      float angleError = targetAngle - currentHeading;
 
-      std::vector<double> outs = toPointStep(tarX, tarY, odom::getPos());
-      left_out = outs[0] - outs[1];
-      right_out = outs[0] + outs[1];
+      // Standard Shortest Path Wrap to [-180, 180]
+      while (angleError > 180) angleError -= 360;
+      while (angleError < -180) angleError += 360;
+
+      outA = angularPID.update(angleError);
+      dist = hypot(tarX-pos[0],tarY-pos[1]);
+      outL = lateralPID.update(dist)* cos(angleError * M_PI/180.0);
+
+      left_out = outL + outA;
+      right_out = outL - outA;
       count = count + 1;
-      mainChassis->leftMotors->move_velocity(left_out);
-      mainChassis->rightMotors->move_velocity(right_out);
-      pros::lcd::print(0, "Left: %f Right: %f", left_out, right_out);
+      motionChassis->leftMotors->move_velocity(left_out);
+      motionChassis->rightMotors->move_velocity(right_out);
+      pros::lcd::print(0, "tar: %f dist: %f", targetAngle, dist);
         
       pros::delay(10);
     }while(dist > exit);
     left_out = 0;
     right_out = 0;
-    mainChassis->leftMotors->move_velocity(left_out);
-    mainChassis->rightMotors->move_velocity(right_out);
+    motionChassis->leftMotors->move_velocity(left_out);
+    motionChassis->rightMotors->move_velocity(right_out);
 }
 
 std::vector<double> toAngleStep(float theta, std::vector<double> pos){
@@ -147,8 +165,8 @@ void toAng(float tarT, float exit){
       std::vector<double> outs = toAngleStep(tarT, odom::getPos());
       left_out = -outs[0];
       right_out = outs[0];
-      mainChassis->rightMotors->move_velocity(right_out);
-      mainChassis->leftMotors->move_velocity(left_out);
+      motionChassis->rightMotors->move_velocity(right_out);
+      motionChassis->leftMotors->move_velocity(left_out);
 
       pros::lcd::print(0, "left: %f right: %f error: %f", left_out, right_out, outs[1]);
 
@@ -157,8 +175,36 @@ void toAng(float tarT, float exit){
     }while(std::abs(err) > exit);
     left_out = 0;
     right_out = 0;
-    mainChassis->leftMotors->move_velocity(left_out);
-    mainChassis->rightMotors->move_velocity(right_out);
+    motionChassis->leftMotors->move_velocity(left_out);
+    motionChassis->rightMotors->move_velocity(right_out);
+}
+
+void turnToPoint(float sigX, float sigY, float exit){
+
+  angularPID.reset();
+  lateralPID.reset();
+  float err;
+  std::vector<double> pos = odom::getPos();
+    do{
+      
+      float angled = atan2(sigY - pos[1], sigX - pos[0]) * (180/M_PI);
+      float wrapped = fmod(((-odom::getAng())-180),360)+180;
+      outA = angularPID.update(fmod(((angled-wrapped)-180),360)+180);
+      left_out = outA;
+      right_out = -outA;
+      motionChassis->rightMotors->move_velocity(right_out);
+      motionChassis->leftMotors->move_velocity(left_out);
+
+      pros::lcd::print(0, "X: %f Y: %f error: %f", pos[0], pos[1], angled);
+
+      pros::delay(10);
+      err = angled;
+    }while(std::abs(err) > exit);
+    //}while(1==2);
+    left_out = 0;
+    right_out = 0;
+    motionChassis->leftMotors->move_velocity(left_out);
+    motionChassis->rightMotors->move_velocity(right_out);
 }
 
 std::vector<double> getOuts(){
@@ -290,13 +336,13 @@ void follow(std::vector<std::pair<float,float>> path, float exit, float lookDis)
       right_out = outL + outs[3];
       LFINDEX = outs[2];
 
-      mainChassis->leftMotors->move_velocity(left_out);
-      mainChassis->rightMotors->move_velocity(right_out);
+      motionChassis->leftMotors->move_velocity(left_out);
+      motionChassis->rightMotors->move_velocity(right_out);
         
       pros::delay(10);
     }while(dist > exit);
     left_out = 0;
     right_out = 0;
-    mainChassis->leftMotors->move_velocity(left_out);
-    mainChassis->rightMotors->move_velocity(right_out);
+    motionChassis->leftMotors->move_velocity(left_out);
+    motionChassis->rightMotors->move_velocity(right_out);
 }

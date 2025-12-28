@@ -24,4 +24,3 @@ struct chassis{
         chassis(pros::IMU* val, pros::MotorGroup* val1, pros::MotorGroup* val2, pros::Rotation* val3, pros::Rotation* val4) : imu(val), leftMotors(val1), rightMotors(val2), horiz(val3), vert(val4) {}
     };
 
-chassis* mainChassis;

@@ -107,11 +107,12 @@ void opcontrol() {
 
   chassis mainChassis(&imu, &left_mg, &right_mg, &horiz_tracking, nullptr);
   initMotion(&mainChassis);
-  toAng(240, 5);
+  //turnToPoint(10,20, 1);
 
-  //toPoint(10, 10, 5);
+  toPoint(-10, 10, 4);
+  toPoint(10, 10, 4);
 
- /* while (true) {
+  /*while (true) {
   pros::lcd::print(0, "X: %f Y: %f", odom::getPos()[0], odom::getPos()[1]);
   pros::delay(10);
   }*/

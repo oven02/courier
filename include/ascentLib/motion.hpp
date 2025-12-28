@@ -32,6 +32,8 @@ void toPoint(float tarX, float tarY, float exit);
 std::vector<double> toAngleStep(float sigX,float sigY, std::vector<float> pos);
 void toAng(float tarT, float exit);
 
+void turnToPoint(float sigX, float sigY, float exit);
+
 std::vector<double> getOuts();
 
 std::vector<double> pure_pursuit_step(float sigX,float sigY, std::vector<float> pos);
