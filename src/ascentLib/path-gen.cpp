@@ -43,8 +43,18 @@ std::vector<std::pair<float, float>> spline(enum degree deg, std::vector<std::pa
         }
         return out;
     }else if (deg == FIVE){
+        float x0 = pts[0].first;
+        float y0 = pts[0].second;
+        float x1 = pts[1].first;
+        float y1 = pts[1].second;
+        float x2 = pts[2].first;
+        float y2 = pts[2].second;
+        float x3 = pts[2].first;
+        float y3 = pts[2].second;
+        float x4 = pts[3].first;
+        float y4 = pts[3].second;
         for(float t = 0; t <= 1; t += 1.0f/samples){
-            
+            out.push_back({std::pow(1-t,4)*x0+4*std::pow(1-t, 3)*t*x1+6*std::pow(1-t, 2)*std::pow(t, 2)*x2+4*(1-t)*std::pow(t,3)*x3+std::pow(t,4)*x4, std::pow(1-t,4)*y0+4*std::pow(1-t, 3)*t*y1+6*std::pow(1-t, 2)*std::pow(t, 2)*y2+4*(1-t)*std::pow(t,3)*y3+std::pow(t,4)*y4});
         }
     }
     return {{0,0}};
