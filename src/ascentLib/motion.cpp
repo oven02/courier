@@ -28,12 +28,11 @@ int sgn(float val){
   }
 }
 
-double angleWraper(double value){
-  double wrapped = fmod(value + 180.0, 360.0);
-  if (wrapped < 0) {
-      wrapped += 360.0;
-  }
-  return wrapped - 180.0;
+double constrainAngle(double x){
+    x = fmod(x + 180,360);
+    if (x < 0)
+        x += 360;
+    return x - 180;
 }
 
 float outA;
@@ -61,7 +60,7 @@ void PID::changeVals(float inkP, float inkI, float inkD){
         }
         integral += error;
         derivative = error - prevError;
-        float output =  kP * error + kI * integral + kD * derivative;
+        output =  kP * error + kI * integral + kD * derivative;
         prevError = error;
         return output;
     }
@@ -74,7 +73,7 @@ void PID::changeVals(float inkP, float inkI, float inkD){
         }
         integral += error;
         derivative = error - prevError;
-        float output =  kP * error + kI * integral + kD * derivative;
+        output =  kP * error + kI * integral + kD * derivative;
         prevError = error;
         return output;
     }
@@ -85,10 +84,11 @@ void PID::changeVals(float inkP, float inkI, float inkD){
       prevError = 0;
       out = 0;
       derivative = 0;
+      output = 0;
     }
 
-PID angularPID(1,0,6);
-PID lateralPID(1,0,6);
+PID angularPID(0.1,0,6);
+PID lateralPID(3,0,6);
 
 chassis* motionChassis;
 
@@ -109,37 +109,63 @@ std::vector<double> toPointStep(float sigX,float sigY, std::vector<double> pos, 
   
 }
 
-void toPoint(float tarX, float tarY, float exit){
+void toPoint(float tarX, float tarY, float exit, bool reversed){
   int count = 0;
 
   angularPID.reset();
   lateralPID.reset();
   std::vector<double> pos = odom::getPos();
+  float dist;
   //float angled = atan2(tarY - pos[1], tarX - pos[0]) * (180/M_PI);
   float targetAngle = atan2(tarX - pos[0], tarY - pos[1]) * (180/M_PI);
+  float dx = tarX - pos[0];
+  float dy = tarY - pos[1];
+  bool alter = false;
+  if(dx*dy < 0){
+    alter = true;
+  }
     do{
-      std::vector<double> pos = odom::getPos();
       
-      float currentHeading = -pos[2]; // Ensure this matches your odom heading
+      std::vector<double> pos = odom::getPos();
+      if(reversed){
+        pos[2] += 180;
+      }
+
+      float currentHeading = pos[2];
       float angleError = targetAngle - currentHeading;
 
       // Standard Shortest Path Wrap to [-180, 180]
-      while (angleError > 180) angleError -= 360;
-      while (angleError < -180) angleError += 360;
+      angleError = constrainAngle(angleError);
 
       outA = angularPID.update(angleError);
-      dist = hypot(tarX-pos[0],tarY-pos[1]);
-      outL = lateralPID.update(dist)* cos(angleError * M_PI/180.0);
+      // Calculate the vector to the target
+float dx = tarX - pos[0];
+float dy = tarY - pos[1];
 
-      left_out = outL + outA;
-      right_out = outL - outA;
+// Use a dot product to find if the point is in front or behind
+// currentHeading should be in radians for this calculation
+float angleRad = currentHeading * (M_PI / 180.0);
+float forwardX = sin(angleRad);
+float forwardY = cos(angleRad);
+
+// This gives positive dist if point is in front, negative if behind
+dist = (dx * forwardX + dy * forwardY) * (reversed ? -1 : 1); 
+
+if(alter){
+  dist *= -1;
+}
+
+outL = lateralPID.update(dist);
+
+      left_out = outL - outA;
+      right_out = outL + outA;
       count = count + 1;
       motionChassis->leftMotors->move_velocity(left_out);
       motionChassis->rightMotors->move_velocity(right_out);
-      pros::lcd::print(0, "tar: %f dist: %f", targetAngle, dist);
+      pros::lcd::print(0, "L: %f A: %f", targetAngle, angleError);
         
       pros::delay(10);
-    }while(dist > exit);
+    }while(std::abs(dist) > exit);
     left_out = 0;
     right_out = 0;
     motionChassis->leftMotors->move_velocity(left_out);
@@ -149,7 +175,9 @@ void toPoint(float tarX, float tarY, float exit){
 std::vector<double> toAngleStep(float theta, std::vector<double> pos){
   
   float angled = theta - (pos[2]);
-  outA = angularPID.update(angleWraper(angled));
+  while (angled > 180) angled -= 360;
+  while (angled < -180) angled += 360;
+  outA = angularPID.update(constrainAngle(angled));
 
   return {outA, angled};
   
@@ -160,23 +188,33 @@ void toAng(float tarT, float exit){
   angularPID.reset();
   lateralPID.reset();
   float err;
+  int settleCount = 0;
     do{
-
-      std::vector<double> outs = toAngleStep(tarT, odom::getPos());
-      left_out = -outs[0];
-      right_out = outs[0];
+      float angled = constrainAngle(tarT - odom::getAng());
+      outA = angularPID.update(constrainAngle(angled));
+      left_out = -outA;
+      right_out = outA;
       motionChassis->rightMotors->move_velocity(right_out);
       motionChassis->leftMotors->move_velocity(left_out);
 
-      pros::lcd::print(0, "left: %f right: %f error: %f", left_out, right_out, outs[1]);
+      pros::lcd::print(0, "err: %f", angled);
 
       pros::delay(10);
-      err = outs[1];
-    }while(std::abs(err) > exit);
+      err = angled;
+      if (std::abs(err) < exit) {
+            settleCount++;
+        } else {
+            settleCount = 0;
+        }
+
+        if (settleCount > 10) break;
+    }while(true);
     left_out = 0;
     right_out = 0;
     motionChassis->leftMotors->move_velocity(left_out);
     motionChassis->rightMotors->move_velocity(right_out);
+    motionChassis->leftMotors->brake();
+    motionChassis->rightMotors->brake();
 }
 
 void turnToPoint(float sigX, float sigY, float exit){
@@ -187,7 +225,7 @@ void turnToPoint(float sigX, float sigY, float exit){
   std::vector<double> pos = odom::getPos();
     do{
       
-      float angled = atan2(sigY - pos[1], sigX - pos[0]) * (180/M_PI);
+      float angled = atan2(sigX - pos[0], sigY - pos[1]) * (180/M_PI);
       float wrapped = fmod(((-odom::getAng())-180),360)+180;
       outA = angularPID.update(fmod(((angled-wrapped)-180),360)+180);
       left_out = outA;

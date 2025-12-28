@@ -67,5 +67,6 @@ std::vector<double> getPos();
 std::vector<double> getVals();
 Point getPoint();
 float getAng();
+void setOdom(float x, float y);
 
 }

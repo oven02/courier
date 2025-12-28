@@ -14,6 +14,7 @@ class PID{
     float prevError = 0;
     float out = 0;
     float derivative;
+    float output;
     PID(float inkP, float inkI, float inkD);
     void changeVals(float inkP, float inkI, float inkD);
     float update(float sig);
@@ -24,10 +25,10 @@ class PID{
 
 
 
-void initMotion(chassis* initC, std::vector<float> angV = {1,0,12}, std::vector<float> latV = {1,0,6});
+void initMotion(chassis* initC, std::vector<float> angV = {0.01,0,12}, std::vector<float> latV = {3,0,6});
 
 std::vector<double> toPointStep(float sigX,float sigY, std::vector<float> pos);
-void toPoint(float tarX, float tarY, float exit);
+void toPoint(float tarX, float tarY, float exit, bool reversed = false);
 
 std::vector<double> toAngleStep(float sigX,float sigY, std::vector<float> pos);
 void toAng(float tarT, float exit);

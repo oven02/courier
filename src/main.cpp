@@ -2,6 +2,7 @@
 #include "ascentLib/odom.hpp"
 #include "ascentLib/motion.hpp"
 #include "pros/imu.hpp"
+#include "pros/motor_group.hpp"
 #include "pros/rtos.hpp"
 #include <iostream> 
 #include <cstdlib> // For integer abs()
@@ -106,11 +107,32 @@ void opcontrol() {
   odom::init_odom(odom::DRIVE, params);
 
   chassis mainChassis(&imu, &left_mg, &right_mg, &horiz_tracking, nullptr);
-  initMotion(&mainChassis);
+  initMotion(&mainChassis, {1.25,0,12}, {5,0,6});
   //turnToPoint(10,20, 1);
 
-  toPoint(-10, 10, 4);
-  toPoint(10, 10, 4);
+  toPoint(0, 30, 5);
+  left_mg.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+  right_mg.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+  left_mg.brake();
+  right_mg.brake();
+  toAng(-135, 2);
+  odom::setOdom(0, 0);
+  toPoint(10, 10, 5, true);
+  odom::setOdom(10, 10);
+  toPoint(-33, -25, 5, false);
+  left_mg.brake();
+  right_mg.brake();
+  toAng(180, 0.75);
+  odom::setOdom(0, 0);
+  //pros::delay(1000);
+  toPoint(0, -10, 3);
+  left_mg.brake();
+  right_mg.brake();
+  pros::delay(1000);
+  odom::setOdom(0, 0);
+  toPoint(0, 30, 3, true);
+
+
 
   /*while (true) {
   pros::lcd::print(0, "X: %f Y: %f", odom::getPos()[0], odom::getPos()[1]);

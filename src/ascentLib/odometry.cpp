@@ -241,11 +241,11 @@ bool init_odom(enum odom::config con, chassis chass, TaskParams params){
 }
 
 std::vector<double> getPos(){
-  return {xPos, yPos, theta * (180/M_PI)};
+  return {-xPos, yPos, theta * (180/M_PI)};
 }
 
 Point getPoint(){
-  Point out(xPos, yPos);
+  Point out(-xPos, yPos);
   return out;
 }
 
@@ -257,7 +257,10 @@ std::vector<double> getVals(){
   return {vert, horiz, theta * (180/M_PI)};  
 }
 
-
+void setOdom(float x, float y){
+  xPos = -x;
+  yPos = y;
+}
 
 
 } //Namespace odom
