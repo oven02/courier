@@ -1,15 +1,4 @@
-#include "main.h" // IWYU pragma: keep
-#include "ascentLib/odom.hpp"
 #include "ascentLib/motion.hpp"
-#include "ascentLib/util.hpp"
-#include "pros/imu.hpp"
-#include "pros/rtos.hpp"
-#include <iostream> 
-#include <cstdlib> // For integer abs()
-#include <cmath>
-#include <utility>
-#include <algorithm> 
-#include <vector>
 
 
 float right_out = 0;
@@ -120,68 +109,45 @@ void toPoint(float tarX, float tarY, float exit, bool reversed){
   float targetAngle = atan2(tarX - pos[0], tarY - pos[1]) * (180/M_PI);
   float dx = tarX - pos[0];
   float dy = tarY - pos[1];
-  bool alter = false;
-  if(dx*dy < 0){
-    alter = true;
-  }
+  float rawDist;
     do{
-      
+      targetAngle = atan2(tarX - pos[0], tarY - pos[1]) * (180/M_PI);
       std::vector<double> pos = odom::getPos();
-      if(reversed){
-        pos[2] += 180;
-      }
+      if(reversed) pos[2] += 180;
+      
+      float dx = tarX - pos[0];
+      float dy = tarY - pos[1];
+      rawDist = std::hypot(dx, dy); 
+ 
+      float angleError = constrainAngle(targetAngle - pos[2]);
+    
 
-      float currentHeading = pos[2];
-      float angleError = targetAngle - currentHeading;
+      float angleRad = odom::getAng() * (M_PI / 180.0);
+      float forwardX = sin(angleRad);
+      float forwardY = cos(angleRad);
+      dist = (dx * forwardX + dy * forwardY); 
 
-      // Standard Shortest Path Wrap to [-180, 180]
-      angleError = constrainAngle(angleError);
+      //if(reversed) dist *= -1;
 
       outA = angularPID.update(angleError);
-      // Calculate the vector to the target
-float dx = tarX - pos[0];
-float dy = tarY - pos[1];
 
-// Use a dot product to find if the point is in front or behind
-// currentHeading should be in radians for this calculation
-float angleRad = currentHeading * (M_PI / 180.0);
-float forwardX = sin(angleRad);
-float forwardY = cos(angleRad);
-
-// This gives positive dist if point is in front, negative if behind
-dist = (dx * forwardX + dy * forwardY) * (reversed ? -1 : 1); 
-
-if(alter){
-  dist *= -1;
-}
-
-outL = lateralPID.update(dist);
+      outL = lateralPID.update(dist);
 
       left_out = outL - outA;
       right_out = outL + outA;
       count = count + 1;
       motionChassis->leftMotors->move_velocity(left_out);
       motionChassis->rightMotors->move_velocity(right_out);
-      pros::lcd::print(0, "L: %f A: %f", targetAngle, angleError);
-        
+      pros::lcd::print(0, "L: %f A: %f", dist, angleError);
+      //pros::lcd::print(2, "X: %f Y: %f", pos[0], pos[1]); 
       pros::delay(10);
-    }while(std::abs(dist) > exit);
+    }while(std::abs(rawDist) > exit);
     left_out = 0;
     right_out = 0;
     motionChassis->leftMotors->move_velocity(left_out);
     motionChassis->rightMotors->move_velocity(right_out);
 }
 
-std::vector<double> toAngleStep(float theta, std::vector<double> pos){
-  
-  float angled = theta - (pos[2]);
-  while (angled > 180) angled -= 360;
-  while (angled < -180) angled += 360;
-  outA = angularPID.update(constrainAngle(angled));
-
-  return {outA, angled};
-  
-}
 
 void toAng(float tarT, float exit){
 
@@ -217,27 +183,39 @@ void toAng(float tarT, float exit){
     motionChassis->rightMotors->brake();
 }
 
-void turnToPoint(float sigX, float sigY, float exit){
+void turnToPoint(float tarX, float tarY, float exit){
 
   angularPID.reset();
   lateralPID.reset();
   float err;
   std::vector<double> pos = odom::getPos();
+  float targetAngle = atan2(tarX - pos[0], tarY - pos[1]) * (180/M_PI);
+    int settleCount = 0;
     do{
-      
-      float angled = atan2(sigX - pos[0], sigY - pos[1]) * (180/M_PI);
-      float wrapped = fmod(((-odom::getAng())-180),360)+180;
-      outA = angularPID.update(fmod(((angled-wrapped)-180),360)+180);
-      left_out = outA;
-      right_out = -outA;
+
+      float currentHeading = odom::getAng();
+      float angleError = targetAngle - currentHeading;
+
+      angleError = constrainAngle(angleError);
+
+      outA = angularPID.update(angleError);
+      left_out = -outA;
+      right_out = outA;
       motionChassis->rightMotors->move_velocity(right_out);
       motionChassis->leftMotors->move_velocity(left_out);
 
-      pros::lcd::print(0, "X: %f Y: %f error: %f", pos[0], pos[1], angled);
+      pros::lcd::print(0, "X: %f Y: %f error: %f", pos[0], pos[1], angleError);
 
       pros::delay(10);
-      err = angled;
-    }while(std::abs(err) > exit);
+      err = angleError;
+      if (std::abs(err) < exit) {
+            settleCount++;
+        } else {
+            settleCount = 0;
+        }
+
+        if (settleCount > 10) break;
+    }while(true);
     //}while(1==2);
     left_out = 0;
     right_out = 0;
@@ -245,9 +223,43 @@ void turnToPoint(float sigX, float sigY, float exit){
     motionChassis->rightMotors->move_velocity(right_out);
 }
 
-std::vector<double> getOuts(){
-  return {right_out,left_out};
-} 
+void toDistance(float dist, float exit){
+
+  angularPID.reset();
+  lateralPID.reset();
+  float err;
+  float start = motionChassis->leftMotors->get_position();
+  float target = start + dist;
+  int settleCount = 0;
+  float current;
+  do{
+
+      current = motionChassis->leftMotors->get_position();
+      err = target - current;
+
+      outL = lateralPID.update(err);
+      left_out = outL;
+      right_out = outL;
+      motionChassis->rightMotors->move_velocity(right_out);
+      motionChassis->leftMotors->move_velocity(left_out);
+
+      pros::lcd::print(0, "error: %f at: %f", err, current);
+
+      pros::delay(10);
+      
+      if (std::abs(err) < exit) {
+            settleCount++;
+        } else {
+            settleCount = 0;
+        }
+
+        if (settleCount > 10) break;
+    }while(true);
+    left_out = 0;
+    right_out = 0;
+    motionChassis->leftMotors->move_velocity(left_out);
+    motionChassis->rightMotors->move_velocity(right_out);
+}
 
 float pt_to_pt_distance (Point pt1,Point pt2){
     float distance = std::sqrt(std::pow((pt2.x - pt1.x), 2) + std::pow((pt2.y - pt1.y),2));
@@ -267,9 +279,6 @@ float linearVel = 100;
 
 
 bool using_rotation = false;
-
-
-
 
 std::vector<float> pure_pursuit_step (std::vector<std::pair<float,float>> path, Point currentPos, float currentHeading, float lookAheadDis, float LFindex){
 

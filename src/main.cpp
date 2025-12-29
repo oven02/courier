@@ -108,7 +108,10 @@ void opcontrol() {
 
   chassis mainChassis(&imu, &left_mg, &right_mg, &horiz_tracking, nullptr);
   initMotion(&mainChassis, {1.25,0,12}, {5,0,6});
-  //turnToPoint(10,20, 1);
+  
+  //toPoint(-10, 10, 1);
+
+  //turnToPoint(10,-10, 1);
 
   toPoint(0, 30, 5);
   left_mg.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
@@ -138,8 +141,5 @@ void opcontrol() {
   pros::lcd::print(0, "X: %f Y: %f", odom::getPos()[0], odom::getPos()[1]);
   pros::delay(10);
   }*/
-	
-	
-  //control::control(10,20,0);
 
 }

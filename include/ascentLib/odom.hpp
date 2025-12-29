@@ -1,8 +1,13 @@
 #pragma once
-
-#include "main.h"
+#include <vector>
+#include <cmath>
+#include "main.h" // IWYU pragma: keep
 #include "ascentLib/util.hpp"
 #include <vector>
+#include "ascentLib/util.hpp"
+#include "pros/motor_group.hpp"
+#include "pros/motors.hpp"
+#include "pros/rotation.hpp"
 
 namespace odom {
 enum config {

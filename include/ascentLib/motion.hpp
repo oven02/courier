@@ -1,8 +1,17 @@
 #pragma once
 
-#include <vector>
 #include "main.h"
 #include "ascentLib/util.hpp"
+#include "ascentLib/odom.hpp"
+#include "pros/imu.hpp"
+#include "pros/rtos.hpp"
+#include <iostream> 
+#include <cstdlib> // For integer abs()
+#include <cmath>
+#include <utility>
+#include <algorithm> 
+#include <vector>
+
 
 class PID{
     public:
@@ -30,12 +39,11 @@ void initMotion(chassis* initC, std::vector<float> angV = {0.01,0,12}, std::vect
 std::vector<double> toPointStep(float sigX,float sigY, std::vector<float> pos);
 void toPoint(float tarX, float tarY, float exit, bool reversed = false);
 
-std::vector<double> toAngleStep(float sigX,float sigY, std::vector<float> pos);
 void toAng(float tarT, float exit);
 
 void turnToPoint(float sigX, float sigY, float exit);
 
-std::vector<double> getOuts();
+void toDistance(float dist, float exit);
 
 std::vector<double> pure_pursuit_step(float sigX,float sigY, std::vector<float> pos);
 void follow(float tarT, float exit);

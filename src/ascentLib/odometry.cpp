@@ -1,11 +1,4 @@
-#include <vector>
-#include <cmath>
-#include "main.h" // IWYU pragma: keep
 #include "ascentLib/odom.hpp"
-#include "ascentLib/util.hpp"
-#include "pros/motor_group.hpp"
-#include "pros/motors.hpp"
-#include "pros/rotation.hpp"
 
 namespace odom{
 
