@@ -1,4 +1,5 @@
 #include "ascentLib/motion.hpp"
+#include <cmath>
 
 
 float right_out = 0;
@@ -98,7 +99,7 @@ std::vector<double> toPointStep(float sigX,float sigY, std::vector<double> pos, 
   
 }
 
-void toPoint(float tarX, float tarY, float exit, bool reversed){
+void toPoint(float tarX, float tarY, float exit, moveParams params){
   int count = 0;
 
   angularPID.reset();
@@ -111,9 +112,9 @@ void toPoint(float tarX, float tarY, float exit, bool reversed){
   float dy = tarY - pos[1];
   float rawDist;
     do{
-      targetAngle = atan2(tarX - pos[0], tarY - pos[1]) * (180/M_PI);
+      if (!params.steady) targetAngle = atan2(tarX - pos[0], tarY - pos[1]) * (180/M_PI);
       std::vector<double> pos = odom::getPos();
-      if(reversed) pos[2] += 180;
+      if(params.reversed) pos[2] += 180;
       
       float dx = tarX - pos[0];
       float dy = tarY - pos[1];
@@ -127,7 +128,83 @@ void toPoint(float tarX, float tarY, float exit, bool reversed){
       float forwardY = cos(angleRad);
       dist = (dx * forwardX + dy * forwardY); 
 
-      //if(reversed) dist *= -1;
+      if(params.straight || rawDist < params.settleDist) angleError = 0;
+
+      if(params.cosScalling) dist = dist * std::cos((angleError * M_PI) / 180.0);
+      
+      if(params.cosScalling && std::cos((angleError * M_PI) / 180.0) < 0) dist = 0;
+      
+
+      outA = angularPID.update(angleError);
+      outL = lateralPID.update(dist);      
+
+      left_out = outL - outA;
+      right_out = outL + outA;
+
+      float max = fmax(std::abs(left_out), std::abs(right_out));
+      float MAXMOTOR = 200;
+      if (max > MAXMOTOR){
+        left_out = (left_out / max) * MAXMOTOR;
+        right_out = (right_out / max) * MAXMOTOR;
+      }
+
+      count = count + 1;
+
+      motionChassis->leftMotors->move_velocity(left_out);
+      motionChassis->rightMotors->move_velocity(right_out);
+      pros::lcd::print(0, "L: %f A: %f", dist, angleError);
+      //pros::lcd::print(2, "X: %f Y: %f", pos[0], pos[1]); 
+      pros::delay(10);
+    }while(std::abs(rawDist) > exit);
+    left_out = 0;
+    right_out = 0;
+    motionChassis->leftMotors->move_velocity(left_out);
+    motionChassis->rightMotors->move_velocity(right_out);
+}
+
+
+void toPose(float tarX, float tarY, float tarT, float exit, moveParams params){
+  int count = 0;
+
+  angularPID.reset();
+  lateralPID.reset();
+  std::vector<double> pos = odom::getPos();
+  float dist;
+  //float angled = atan2(tarY - pos[1], tarX - pos[0]) * (180/M_PI);
+  float targetAngle = atan2(tarX - pos[0], tarY - pos[1]) * (180/M_PI);
+  float dx = tarX - pos[0];
+  float dy = tarY - pos[1];
+  float rawDist = hypot(dx, dy);
+  float carrDist;
+  float angleError;
+    do{
+      std::vector<double> pos = odom::getPos();
+
+      Point carr(tarX - rawDist * cos(tarT) * params.dlead,
+			         tarY - rawDist * sin(tarT) * params.dlead);
+      targetAngle = atan2(carr.x - pos[0], carr.y - pos[1]) * (180/M_PI);
+
+      if(params.reversed) pos[2] += 180;
+      
+      float Cdx = carr.x - pos[0];
+      float Cdy = carr.y - pos[1];
+      carrDist = std::hypot(Cdx, Cdy); 
+      
+      float dx = tarX - pos[0];
+      float dy = tarY - pos[1];
+      rawDist = std::hypot(dx, dy); 
+      if(params.settleDist > 0 && rawDist < params.settleDist){
+        targetAngle = tarT;
+      }
+      angleError = constrainAngle(targetAngle - pos[2]);
+    
+
+      float angleRad = odom::getAng() * (M_PI / 180.0);
+      float forwardX = sin(angleRad);
+      float forwardY = cos(angleRad);
+      dist = (Cdx * forwardX + Cdy * forwardY); 
+
+      
 
       outA = angularPID.update(angleError);
 
@@ -139,9 +216,9 @@ void toPoint(float tarX, float tarY, float exit, bool reversed){
       motionChassis->leftMotors->move_velocity(left_out);
       motionChassis->rightMotors->move_velocity(right_out);
       pros::lcd::print(0, "L: %f A: %f", dist, angleError);
-      //pros::lcd::print(2, "X: %f Y: %f", pos[0], pos[1]); 
+      //pros::lcd::print(0, "X: %f Y: %f", carr.x, carr.y); 
       pros::delay(10);
-    }while(std::abs(rawDist) > exit);
+    }while(std::abs(rawDist) > exit || std::abs(angleError) > 5);
     left_out = 0;
     right_out = 0;
     motionChassis->leftMotors->move_velocity(left_out);

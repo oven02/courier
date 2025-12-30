@@ -32,12 +32,23 @@ class PID{
     
 };
 
+struct moveParams{
+    bool reversed;
+    bool steady;
+    bool straight;
+    bool cosScalling;
+    float settleDist;
+    float dlead;
+    //moveParams(bool rev = false, bool st = false, bool str = false, bool cosS = false, float sD = 0, float dl = 4.0) : reversed(rev), steady(st), straight(str), cosScalling(cosS), settleDist(sD), dlead(dl) {}
+};
 
 
 void initMotion(chassis* initC, std::vector<float> angV = {0.01,0,12}, std::vector<float> latV = {3,0,6});
 
 std::vector<double> toPointStep(float sigX,float sigY, std::vector<float> pos);
-void toPoint(float tarX, float tarY, float exit, bool reversed = false);
+void toPoint(float tarX, float tarY, float exit, moveParams params = {false, false, false, false, 0, 4.0});
+
+void toPose(float tarX, float tarY, float tarT, float exit, moveParams params = {false, false, false, false, 0, 4.0});
 
 void toAng(float tarT, float exit);
 
@@ -46,6 +57,6 @@ void turnToPoint(float sigX, float sigY, float exit);
 void toDistance(float dist, float exit);
 
 std::vector<double> pure_pursuit_step(float sigX,float sigY, std::vector<float> pos);
-void follow(float tarT, float exit);
+void follow(std::vector<std::pair<float,float>> path, float exit, float lookDis);
 
 

@@ -113,6 +113,7 @@ void opcontrol() {
 
   //turnToPoint(10,-10, 1);
 
+/*
   toPoint(0, 30, 5);
   left_mg.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
   right_mg.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
@@ -120,22 +121,47 @@ void opcontrol() {
   right_mg.brake();
   toAng(-135, 2);
   odom::setOdom(0, 0);
-  toPoint(10, 10, 5, true);
+  toPoint(10, 10, 5, {.reversed = true});
   odom::setOdom(10, 10);
-  toPoint(-33, -25, 5, false);
+  toPoint(-30, -25, 5);
   left_mg.brake();
   right_mg.brake();
-  toAng(180, 0.75);
+  toAng(180, 1);
   odom::setOdom(0, 0);
   //pros::delay(1000);
   toPoint(0, -10, 3);
+  pros::delay(1000);
+  toAng(180, 1);
+  odom::setOdom(0, 0);
+  toPoint(0, 30, 3, {.reversed = true});*/
+
+  toPoint(0, 31, 5);
+  left_mg.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+  right_mg.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
   left_mg.brake();
   right_mg.brake();
-  pros::delay(1000);
+  //toAng(-45, 2);
   odom::setOdom(0, 0);
-  toPoint(0, 30, 3, true);
-
-
+  toPoint(-7, 7, 5);
+  toPoint(0, -10, 5, {.reversed = true});
+  toAng(-90, 2);
+  odom::setOdom(0, 0);
+  toPoint(-40, 0, 5, {.steady = true});
+  toAng(-135, 2);
+  odom::setOdom(0, 0);
+  toPoint(10, 10, 5, {.reversed = true});
+  odom::setOdom(10, 10);
+  toPoint(-28, -25, 5);
+  left_mg.brake();
+  right_mg.brake();
+  toAng(180, 1.75);
+  odom::setOdom(0, 0);
+  //pros::delay(1000);
+  toPoint(0, -10, 3);
+  pros::delay(1000);
+  toAng(180, 1);
+  odom::setOdom(0, 0);
+  toPoint(0, 30, 3, {.reversed = true});
 
   /*while (true) {
   pros::lcd::print(0, "X: %f Y: %f", odom::getPos()[0], odom::getPos()[1]);
