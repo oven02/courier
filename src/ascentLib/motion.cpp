@@ -52,6 +52,11 @@ void PID::changeVals(float inkP, float inkI, float inkD){
         derivative = error - prevError;
         output =  kP * error + kI * integral + kD * derivative;
         prevError = error;
+
+        if(sgn(error) != sgn(prevError)) integral = 0;
+
+        if(std::abs(error) < 0.5) integral = 0;
+        
         return output;
     }
 
@@ -111,14 +116,17 @@ void toPoint(float tarX, float tarY, float exit, moveParams params){
   float dx = tarX - pos[0];
   float dy = tarY - pos[1];
   float rawDist;
+  int settleCount = 0;
+  if(params.settleLength == 0) params.settleLength = 10;
     do{
-      if (!params.steady) targetAngle = atan2(tarX - pos[0], tarY - pos[1]) * (180/M_PI);
       std::vector<double> pos = odom::getPos();
       if(params.reversed) pos[2] += 180;
       
       float dx = tarX - pos[0];
       float dy = tarY - pos[1];
       rawDist = std::hypot(dx, dy); 
+
+      if (!params.steady) targetAngle = atan2(tarX - pos[0], tarY - pos[1]) * (180/M_PI);
  
       float angleError = constrainAngle(targetAngle - pos[2]);
     
@@ -130,9 +138,9 @@ void toPoint(float tarX, float tarY, float exit, moveParams params){
 
       if(params.straight || rawDist < params.settleDist) angleError = 0;
 
-      if(params.cosScalling) dist = dist * std::cos((angleError * M_PI) / 180.0);
+      if(!params.cosScalling) dist = dist * std::cos((angleError * M_PI) / 180.0);
       
-      if(params.cosScalling && std::cos((angleError * M_PI) / 180.0) < 0) dist = 0;
+      if(!params.cosScalling && std::cos((angleError * M_PI) / 180.0) < 0) dist = 0;
       
 
       outA = angularPID.update(angleError);
@@ -141,25 +149,39 @@ void toPoint(float tarX, float tarY, float exit, moveParams params){
       left_out = outL - outA;
       right_out = outL + outA;
 
+
       float max = fmax(std::abs(left_out), std::abs(right_out));
-      float MAXMOTOR = 200;
-      if (max > MAXMOTOR){
-        left_out = (left_out / max) * MAXMOTOR;
-        right_out = (right_out / max) * MAXMOTOR;
+      pros::lcd::print(0, "R: %f, L: %f", max, params.MAXSPEED);
+
+      if (params.MAXSPEED == 0) params.MAXSPEED = 127;
+
+      if (max > params.MAXSPEED && params.MAXSPEED > 0){
+        left_out = (left_out / max) * params.MAXSPEED;
+        right_out = (right_out / max) * params.MAXSPEED;
       }
 
       count = count + 1;
 
-      motionChassis->leftMotors->move_velocity(left_out);
-      motionChassis->rightMotors->move_velocity(right_out);
-      pros::lcd::print(0, "L: %f A: %f", dist, angleError);
+      motionChassis->leftMotors->move(left_out);
+      motionChassis->rightMotors->move(right_out);
+      //pros::lcd::print(0, "L: %f A: %f", rawDist, angleError);
       //pros::lcd::print(2, "X: %f Y: %f", pos[0], pos[1]); 
+      
       pros::delay(10);
-    }while(std::abs(rawDist) > exit);
+
+      if (std::abs(rawDist) < exit) {
+            settleCount++;
+        } else {
+            settleCount = 0;
+        }
+
+        if (settleCount >= params.settleLength) break;
+
+    }while(true);
     left_out = 0;
     right_out = 0;
-    motionChassis->leftMotors->move_velocity(left_out);
-    motionChassis->rightMotors->move_velocity(right_out);
+    motionChassis->leftMotors->move(left_out);
+    motionChassis->rightMotors->move(right_out);
 }
 
 
@@ -213,16 +235,16 @@ void toPose(float tarX, float tarY, float tarT, float exit, moveParams params){
       left_out = outL - outA;
       right_out = outL + outA;
       count = count + 1;
-      motionChassis->leftMotors->move_velocity(left_out);
-      motionChassis->rightMotors->move_velocity(right_out);
+      motionChassis->leftMotors->move(left_out);
+      motionChassis->rightMotors->move(right_out);
       pros::lcd::print(0, "L: %f A: %f", dist, angleError);
       //pros::lcd::print(0, "X: %f Y: %f", carr.x, carr.y); 
       pros::delay(10);
     }while(std::abs(rawDist) > exit || std::abs(angleError) > 5);
     left_out = 0;
     right_out = 0;
-    motionChassis->leftMotors->move_velocity(left_out);
-    motionChassis->rightMotors->move_velocity(right_out);
+    motionChassis->leftMotors->move(left_out);
+    motionChassis->rightMotors->move(right_out);
 }
 
 
@@ -237,8 +259,8 @@ void toAng(float tarT, float exit){
       outA = angularPID.update(constrainAngle(angled));
       left_out = -outA;
       right_out = outA;
-      motionChassis->rightMotors->move_velocity(right_out);
-      motionChassis->leftMotors->move_velocity(left_out);
+      motionChassis->rightMotors->move(right_out);
+      motionChassis->leftMotors->move(left_out);
 
       pros::lcd::print(0, "err: %f", angled);
 
@@ -254,8 +276,8 @@ void toAng(float tarT, float exit){
     }while(true);
     left_out = 0;
     right_out = 0;
-    motionChassis->leftMotors->move_velocity(left_out);
-    motionChassis->rightMotors->move_velocity(right_out);
+    motionChassis->leftMotors->move(left_out);
+    motionChassis->rightMotors->move(right_out);
     motionChassis->leftMotors->brake();
     motionChassis->rightMotors->brake();
 }
@@ -278,8 +300,8 @@ void turnToPoint(float tarX, float tarY, float exit){
       outA = angularPID.update(angleError);
       left_out = -outA;
       right_out = outA;
-      motionChassis->rightMotors->move_velocity(right_out);
-      motionChassis->leftMotors->move_velocity(left_out);
+      motionChassis->rightMotors->move(right_out);
+      motionChassis->leftMotors->move(left_out);
 
       pros::lcd::print(0, "X: %f Y: %f error: %f", pos[0], pos[1], angleError);
 
@@ -296,8 +318,8 @@ void turnToPoint(float tarX, float tarY, float exit){
     //}while(1==2);
     left_out = 0;
     right_out = 0;
-    motionChassis->leftMotors->move_velocity(left_out);
-    motionChassis->rightMotors->move_velocity(right_out);
+    motionChassis->leftMotors->move(left_out);
+    motionChassis->rightMotors->move(right_out);
 }
 
 void toDistance(float dist, float exit){
@@ -317,8 +339,8 @@ void toDistance(float dist, float exit){
       outL = lateralPID.update(err);
       left_out = outL;
       right_out = outL;
-      motionChassis->rightMotors->move_velocity(right_out);
-      motionChassis->leftMotors->move_velocity(left_out);
+      motionChassis->rightMotors->move(right_out);
+      motionChassis->leftMotors->move(left_out);
 
       pros::lcd::print(0, "error: %f at: %f", err, current);
 
@@ -334,8 +356,8 @@ void toDistance(float dist, float exit){
     }while(true);
     left_out = 0;
     right_out = 0;
-    motionChassis->leftMotors->move_velocity(left_out);
-    motionChassis->rightMotors->move_velocity(right_out);
+    motionChassis->leftMotors->move(left_out);
+    motionChassis->rightMotors->move(right_out);
 }
 
 float pt_to_pt_distance (Point pt1,Point pt2){
@@ -460,13 +482,13 @@ void follow(std::vector<std::pair<float,float>> path, float exit, float lookDis)
       right_out = outL + outs[3];
       LFINDEX = outs[2];
 
-      motionChassis->leftMotors->move_velocity(left_out);
-      motionChassis->rightMotors->move_velocity(right_out);
+      motionChassis->leftMotors->move(left_out);
+      motionChassis->rightMotors->move(right_out);
         
       pros::delay(10);
     }while(dist > exit);
     left_out = 0;
     right_out = 0;
-    motionChassis->leftMotors->move_velocity(left_out);
-    motionChassis->rightMotors->move_velocity(right_out);
+    motionChassis->leftMotors->move(left_out);
+    motionChassis->rightMotors->move(right_out);
 }

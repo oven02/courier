@@ -39,16 +39,27 @@ struct moveParams{
     bool cosScalling;
     float settleDist;
     float dlead;
-    //moveParams(bool rev = false, bool st = false, bool str = false, bool cosS = false, float sD = 0, float dl = 4.0) : reversed(rev), steady(st), straight(str), cosScalling(cosS), settleDist(sD), dlead(dl) {}
+    float MAXSPEED;
+    int settleLength;
+    void init(){
+        reversed = false;
+        steady = false;
+        straight = false;
+        cosScalling = true;
+        settleDist = 0;
+        dlead = 0.1;
+        MAXSPEED = 0;
+        settleLength = 10;
+    }
 };
 
 
 void initMotion(chassis* initC, std::vector<float> angV = {0.01,0,12}, std::vector<float> latV = {3,0,6});
 
 std::vector<double> toPointStep(float sigX,float sigY, std::vector<float> pos);
-void toPoint(float tarX, float tarY, float exit, moveParams params = {false, false, false, false, 0, 4.0});
+void toPoint(float tarX, float tarY, float exit, moveParams params = {});
 
-void toPose(float tarX, float tarY, float tarT, float exit, moveParams params = {false, false, false, false, 0, 4.0});
+void toPose(float tarX, float tarY, float tarT, float exit, moveParams params = {});
 
 void toAng(float tarT, float exit);
 
