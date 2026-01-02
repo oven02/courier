@@ -65,9 +65,5 @@ void toAng(float tarT, float exit);
 
 void turnToPoint(float sigX, float sigY, float exit);
 
-void toDistance(float dist, float exit);
-
-std::vector<double> pure_pursuit_step(float sigX,float sigY, std::vector<float> pos);
-void follow(std::vector<std::pair<float,float>> path, float exit, float lookDis);
-
+void arcToDist(float dist, float exit, float leftSpeed = 127, float rightSpeed = 127, moveParams params = {});
 

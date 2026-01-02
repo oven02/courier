@@ -109,9 +109,11 @@ void opcontrol() {
 
   chassis mainChassis(&imu, &left_mg, &right_mg, &horiz_tracking, nullptr);
   initMotion(&mainChassis, {3,0.001,35}, {5,0.1,6});
+
+  arcToDist(10, 1, 127, 10);
   
-  // toPoint(0, 30, 1, {.steady = true});
-  // toPoint(0, 0, 1, {.reversed = true, .steady = true});
+  //toPoint(0, 30, 1, {.steady = true});
+  //toPoint(0, 0, 1, {.reversed = true, .steady = true});
 
   // toAng(90, 2);
   // toAng(-90, 2);
@@ -170,31 +172,31 @@ void opcontrol() {
   odom::setOdom(0, 0);
   toPoint(0, 30, 3, {.reversed = true});*/
 
-  toPoint(0, 18, 5);
-  left_mg.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
-  right_mg.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
-  left_mg.brake();
-  right_mg.brake();
-  toAng(-65, 2);
-  odom::setOdom(0, 0);
-  //to the balls under goal
-  toPoint(-15, 6.5, 5);
-  odom::setOdom(0, 0);
-
-  toPose(15, -15, 0, 5, {.reversed = true});
+  // toPoint(0, 18, 5);
+  // left_mg.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
+  // right_mg.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
   // left_mg.brake();
   // right_mg.brake();
-  odom::setOdom(0, 0);
-  toPoint(-13, 5, 5, {.reversed = true});
+  // toAng(-65, 2);
   // odom::setOdom(0, 0);
-  toAng(180, 3);
-  odom::setOdom(0, 0);
-  toPoint(0, 20, 5, {.reversed = true, .steady = true, .MAXSPEED = 67});
-  toPoint(0, -20, 5, {.steady = true});
-  toPoint(0, 40, 5, {.reversed = true, .steady = true});
-  /*while (true) {
-  pros::lcd::print(0, "X: %f Y: %f", odom::getPos()[0], odom::getPos()[1]);
-  pros::delay(10);
-  }*/
+  // //to the balls under goal
+  // toPoint(-15, 6.5, 5);
+  // odom::setOdom(0, 0);
+
+  // toPose(15, -15, 0, 5, {.reversed = true});
+  // // left_mg.brake();
+  // // right_mg.brake();
+  // odom::setOdom(0, 0);
+  // toPoint(-13, 5, 5, {.reversed = true});
+  // // odom::setOdom(0, 0);
+  // toAng(180, 3);
+  // odom::setOdom(0, 0);
+  // toPoint(0, 20, 5, {.reversed = true, .steady = true, .MAXSPEED = 67});
+  // toPoint(0, -20, 5, {.steady = true});
+  // toPoint(0, 40, 5, {.reversed = true, .steady = true});
+  // while (true) {
+  // pros::lcd::print(0, "X: %f Y: %f", odom::getPos()[0], odom::getPos()[1]);
+  // pros::delay(10);
+  // }
 
 }
