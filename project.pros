@@ -593,7 +593,7 @@
     },
     "upload_options": {
       "icon": "X",
-      "description": "Odometery and Motion",
+      "description": "Odometry and Motion",
       "slot": 2
     },
     "use_early_access": false
