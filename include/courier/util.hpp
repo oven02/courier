@@ -13,6 +13,17 @@ struct Point {
                 y(y),
                 theta(theta) {}
         };
+struct Particle {
+            float x;
+            float y;
+            float theta = std::numeric_limits<float>::quiet_NaN();
+            float weight = 1.0;
+        // Constructor
+            Point(float x, float y, float theta = std::numeric_limits<float>::quiet_NaN(), float weight = 1.0)
+                : x(x),
+                y(y),
+                theta(theta) weight(weight) {}
+        };
 
 struct chassis{
         pros::IMU* imu;

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "main.h"
-#include "ascentLib/util.hpp"
-#include "ascentLib/odom.hpp"
+#include "courier/util.hpp"
+#include "courier/odom.hpp"
 #include "pros/imu.hpp"
 #include "pros/rtos.hpp"
 #include <iostream> 

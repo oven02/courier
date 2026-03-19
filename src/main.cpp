@@ -1,6 +1,6 @@
 #include "main.h" // IWYU pragma: keep
-#include "ascentLib/odom.hpp"
-#include "ascentLib/motion.hpp"
+#include "courier/odom.hpp"
+#include "courier/motion.hpp"
 #include "pros/imu.hpp"
 #include "pros/motor_group.hpp"
 #include "pros/motors.h"
@@ -110,93 +110,9 @@ void opcontrol() {
   chassis mainChassis(&imu, &left_mg, &right_mg, &horiz_tracking, nullptr);
   initMotion(&mainChassis, {3,0.001,35}, {5,0.1,6});
 
-  arcToDist(10, 1, 127, 10);
-  
-  //toPoint(0, 30, 1, {.steady = true});
-  //toPoint(0, 0, 1, {.reversed = true, .steady = true});
-
-  // toAng(90, 2);
-  // toAng(-90, 2);
-  // toAng(180, 2);
-  // toAng(0, 2);
-
-
-  /*toPoint(0, 18, 5);
-  left_mg.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-  right_mg.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-  left_mg.brake();
-  right_mg.brake();
-  pros::delay(100);
-  toAng(-135, 3);
-  odom::setOdom(0, 0);
-  toPoint(10, 10, 5, {.reversed = true});
-  odom::setOdom(10, 10);
-  toPoint(-20, -25, 5);
-  left_mg.brake();
-  right_mg.brake();
-  pros::delay(100);
-  toAng(180, 3);
-  odom::setOdom(0, 0);
-  //pros::delay(1000);
-  toPoint(0, -10, 3);
-  pros::delay(1000);
-  toAng(180, 3);
-  odom::setOdom(0, 0);
-  toPoint(0, 30, 3, {.reversed = true, .MAXSPEED = 67});*/
-
-  /*toPoint(0, 31, 5);
-  left_mg.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-  right_mg.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-  left_mg.brake();
-  right_mg.brake();
-  //toAng(-45, 2);
-  odom::setOdom(0, 0);
-  toPoint(-7, 7, 5);
-  toPoint(0, -10, 5, {.reversed = true});
-  toAng(-90, 2);
-  odom::setOdom(0, 0);
-  toPoint(-40, 0, 5, {.steady = true});
-  toAng(-135, 2);
-  odom::setOdom(0, 0);
-  toPoint(10, 10, 5, {.reversed = true});
-  odom::setOdom(10, 10);
-  toPoint(-28, -25, 5);
-  left_mg.brake();
-  right_mg.brake();
-  toAng(180, 1.75);
-  odom::setOdom(0, 0);
-  //pros::delay(1000);
-  toPoint(0, -10, 3);
-  pros::delay(1000);
-  toAng(180, 1);
-  odom::setOdom(0, 0);
-  toPoint(0, 30, 3, {.reversed = true});*/
-
-  // toPoint(0, 18, 5);
-  // left_mg.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
-  // right_mg.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
-  // left_mg.brake();
-  // right_mg.brake();
-  // toAng(-65, 2);
-  // odom::setOdom(0, 0);
-  // //to the balls under goal
-  // toPoint(-15, 6.5, 5);
-  // odom::setOdom(0, 0);
-
-  // toPose(15, -15, 0, 5, {.reversed = true});
-  // // left_mg.brake();
-  // // right_mg.brake();
-  // odom::setOdom(0, 0);
-  // toPoint(-13, 5, 5, {.reversed = true});
-  // // odom::setOdom(0, 0);
-  // toAng(180, 3);
-  // odom::setOdom(0, 0);
-  // toPoint(0, 20, 5, {.reversed = true, .steady = true, .MAXSPEED = 67});
-  // toPoint(0, -20, 5, {.steady = true});
-  // toPoint(0, 40, 5, {.reversed = true, .steady = true});
-  // while (true) {
-  // pros::lcd::print(0, "X: %f Y: %f", odom::getPos()[0], odom::getPos()[1]);
-  // pros::delay(10);
-  // }
+  while (true) {
+  pros::lcd::print(0, "X: %f Y: %f", odom::getPos()[0], odom::getPos()[1]);
+  pros::delay(10);
+  }
 
 }

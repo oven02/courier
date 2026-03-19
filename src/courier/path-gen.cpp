@@ -1,4 +1,4 @@
-#include "ascentLib/path-gen.hpp"
+#include "courier/path-gen.hpp"
 #include <cmath>
 
 
@@ -56,6 +56,7 @@ std::vector<std::pair<float, float>> spline(enum degree deg, std::vector<std::pa
         for(float t = 0; t <= 1; t += 1.0f/samples){
             out.push_back({std::pow(1-t,4)*x0+4*std::pow(1-t, 3)*t*x1+6*std::pow(1-t, 2)*std::pow(t, 2)*x2+4*(1-t)*std::pow(t,3)*x3+std::pow(t,4)*x4, std::pow(1-t,4)*y0+4*std::pow(1-t, 3)*t*y1+6*std::pow(1-t, 2)*std::pow(t, 2)*y2+4*(1-t)*std::pow(t,3)*y3+std::pow(t,4)*y4});
         }
+        return out;
     }
     return {{0,0}};
 }
